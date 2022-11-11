@@ -19,24 +19,24 @@ AFRAME.registerComponent('markers_start',{
 			//console.log(url);
 		}
 
-		//marker 18 (index 17)
-		var markerEl = document.createElement('a-marker');
-		markerEl.setAttribute('type','pattern');
-		markerEl.setAttribute('url',markersURLArray[17]);
-		markerEl.setAttribute('id',markersNameArray[17]);
+		// //marker 18 (index 17)
+		// var markerEl = document.createElement('a-marker');
+		// markerEl.setAttribute('type','pattern');
+		// markerEl.setAttribute('url',markersURLArray[17]);
+		// markerEl.setAttribute('id',markersNameArray[17]);
 
-		markerEl.setAttribute('registerevents','');
-		sceneEl.appendChild(markerEl);
+		// markerEl.setAttribute('registerevents','');
+		// sceneEl.appendChild(markerEl);
 
-		//Adding text to each marker
-		var textEl = document.createElement('a-entity');
+		// //Adding text to each marker
+		// var textEl = document.createElement('a-entity');
 		
-		textEl.setAttribute('id','text');
-		textEl.setAttribute('text',{color: 'red', align: 'center', value:markersNameArray[17], width: '5.5'});
-		textEl.object3D.position.set(0, 0.7, 0);
-		textEl.object3D.rotation.set(-90, 0, 0);
+		// textEl.setAttribute('id','text');
+		// textEl.setAttribute('text',{color: 'red', align: 'center', value:markersNameArray[17], width: '5.5'});
+		// textEl.object3D.position.set(0, 0.7, 0);
+		// textEl.object3D.rotation.set(-90, 0, 0);
 
-		markerEl.appendChild(textEl);
+		// markerEl.appendChild(textEl);
 
 		for(var k=0; k<18-1; k++)
 		{
