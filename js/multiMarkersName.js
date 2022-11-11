@@ -28,15 +28,15 @@ AFRAME.registerComponent('markers_start',{
 		markerEl.setAttribute('registerevents','');
 		sceneEl.appendChild(markerEl);
 
-		//Adding text to each marker
-		var textEl = document.createElement('a-entity');
-		
-		textEl.setAttribute('id','text');
-		textEl.setAttribute('text',{color: 'blue', align: 'center', value:markersNameArray[17], width: '5.5'});
-		textEl.object3D.position.set(0, 0.7, 0);
-		textEl.object3D.rotation.set(-90, 0, 0);
+		//Adding model to marker 18
+		// <a-entity scale="0.1 0.1 0.1" obj-model="obj: #chip_test-obj; mtl: #chip_test-mtl"></a-entity>
+		var modelEl = document.createElement('a-entity');
+		modelEl.setAttribute('scale','0.1 0.1 0.1');
+		modelEl.setAttribute('obj-model',{obj: 'chip_test.obj', mtl: 'chip_test.mtl'});
+		modelEl.object3D.position.set(0, 0.7, 0);
+		modelEl.object3D.rotation.set(-90, 0, 0);
 
-		markerEl.appendChild(textEl);
+		markerEl.appendChild(modelEl);
 
 		for(var k=0; k<18-1; k++)
 		{
