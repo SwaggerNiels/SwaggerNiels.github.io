@@ -19,11 +19,11 @@ AFRAME.registerComponent('markers_start',{
 			//console.log(url);
 		}
 
-		//marker 18 (index 17)
+		//marker 1 (index 0)
 		var markerEl = document.createElement('a-marker');
 		markerEl.setAttribute('type','pattern');
-		markerEl.setAttribute('url',markersURLArray[17]);
-		markerEl.setAttribute('id',markersNameArray[17]);
+		markerEl.setAttribute('url',markersURLArray[0]);
+		markerEl.setAttribute('id',markersNameArray[0]);
 
 		markerEl.setAttribute('registerevents','');
 		sceneEl.appendChild(markerEl);
@@ -38,7 +38,7 @@ AFRAME.registerComponent('markers_start',{
 
 		markerEl.appendChild(modelEl);
 
-		for(var k=0; k<18-1; k++)
+		for(var k=1; k<18; k++)
 		{
 			var markerEl = document.createElement('a-marker');
 			markerEl.setAttribute('type','pattern');
