@@ -29,12 +29,29 @@ AFRAME.registerComponent('markers_start',{
 		sceneEl.appendChild(markerEl);
 
 		//Adding model to marker 18
-		// <a-entity scale="0.1 0.1 0.1" obj-model="obj: #chip_test-obj; mtl: #chip_test-mtl"></a-entity>
-		var modelEl = document.createElement('a-entity');
-		modelEl.setAttribute('scale','0.1 0.1 0.1');
-		modelEl.setAttribute('obj-model',{obj: '/chip_test.obj', mtl: '/chip_test.mtl'});
-		modelEl.object3D.position.set(0, 0.7, 0);
-		modelEl.object3D.rotation.set(-90, 0, 0);
+		// // <a-entity scale="0.1 0.1 0.1" obj-model="obj: #chip_test-obj; mtl: #chip_test-mtl"></a-entity>
+		// var modelEl = document.createElement('a-entity');
+		// modelEl.setAttribute('scale','0.1 0.1 0.1');
+		// modelEl.setAttribute('obj-model',{obj: '/chip_test.obj', mtl: '/chip_test.mtl'});
+		// modelEl.object3D.position.set(0, 0.7, 0);
+		// modelEl.object3D.rotation.set(-90, 0, 0);
+		
+		// markerEl.appendChild(modelEl);
+		
+		// <a-entity gltf-model-next="src: url(/path/to/nameOfFile.gltf);" ></a-entity>
+		var gltf_modelEl = document.createElement('a-entity');
+		gltf_modelEl.setAttribute('scale','0.1 0.1 0.1');
+		gltf_modelEl.setAttribute('gltf-model-next',{src: '/model.glb'});
+		gltf_modelEl.object3D.position.set(0, 0.7, 0);
+		gltf_modelEl.object3D.rotation.set(-90, 0, 0);
+		
+		markerEl.appendChild(gltf_modelEl);
+		
+		var textEl = document.createElement('a-entity');
+		textEl.setAttribute('id','text');
+		textEl.setAttribute('text',{color: 'red', align: 'center', value:markersNameArray[0], width: '5.5'});
+		textEl.object3D.position.set(0, 0.7, 0);
+		textEl.object3D.rotation.set(-90, 0, 0);
 
 		markerEl.appendChild(modelEl);
 
