@@ -41,7 +41,7 @@ AFRAME.registerComponent('markers_start',{
 		// <a-entity gltf-model-next="src: url(/path/to/nameOfFile.gltf);" ></a-entity>
 		var gltf_modelEl = document.createElement('a-entity');
 		// gltf_modelEl.setAttribute('scale','0.1 0.1 0.1');
-		gltf_modelEl.setAttribute('gltf-model-next',{src: '/model.glb'});
+		gltf_modelEl.setAttribute('gltf-model','/model.glb');
 		gltf_modelEl.object3D.position.set(0, 0.7, 0);
 		gltf_modelEl.object3D.rotation.set(-90, 0, 0);
 		
