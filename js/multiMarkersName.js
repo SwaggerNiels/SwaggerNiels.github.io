@@ -32,7 +32,7 @@ AFRAME.registerComponent('markers_start',{
 		// <a-entity scale="0.1 0.1 0.1" obj-model="obj: #chip_test-obj; mtl: #chip_test-mtl"></a-entity>
 		var modelEl = document.createElement('a-entity');
 		modelEl.setAttribute('scale','0.1 0.1 0.1');
-		modelEl.setAttribute('obj-model',{obj: 'chip_test.obj', mtl: 'chip_test.mtl'});
+		modelEl.setAttribute('obj-model',{obj: '/chip_test.obj', mtl: '/chip_test.mtl'});
 		modelEl.object3D.position.set(0, 0.7, 0);
 		modelEl.object3D.rotation.set(-90, 0, 0);
 
