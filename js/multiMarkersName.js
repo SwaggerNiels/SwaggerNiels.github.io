@@ -42,7 +42,7 @@ AFRAME.registerComponent('markers_start',{
 		var gltf_modelEl = document.createElement('a-entity');
 		gltf_modelEl.setAttribute('gltf-model','/model.glb');
 		gltf_modelEl.object3D.position.set(0, 0, 0);
-		gltf_modelEl.object3D.scale.set(0.00001, 0.00001, 0.00001);
+		gltf_modelEl.object3D.scale.set(0.05, 0.05, 0.05);
 		
 		markerEl.appendChild(gltf_modelEl);
 		
