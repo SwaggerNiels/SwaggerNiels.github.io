@@ -39,13 +39,13 @@ AFRAME.registerComponent('markers_start',{
 		// markerEl.appendChild(modelEl);
 		
 		// <a-entity gltf-model-next="src: url(/path/to/nameOfFile.gltf);" ></a-entity>
-		// var gltf_modelEl = document.createElement('a-entity');
-		// // gltf_modelEl.setAttribute('scale','0.1 0.1 0.1');
-		// gltf_modelEl.setAttribute('gltf-model','/model.glb');
-		// gltf_modelEl.object3D.position.set(0, 0.7, 0);
-		// gltf_modelEl.object3D.rotation.set(-90, 0, 0);
+		var gltf_modelEl = document.createElement('a-entity');
+		// gltf_modelEl.setAttribute('scale','0.1 0.1 0.1');
+		gltf_modelEl.setAttribute('gltf-model','/model.glb');
+		gltf_modelEl.object3D.position.set(0, 0.7, 0);
+		gltf_modelEl.object3D.rotation.set(-90, 0, 0);
 		
-		// markerEl.appendChild(gltf_modelEl);
+		markerEl.appendChild(gltf_modelEl);
 		
 		var textEl = document.createElement('a-entity');
 		textEl.setAttribute('id','text');
@@ -54,6 +54,8 @@ AFRAME.registerComponent('markers_start',{
 		textEl.object3D.rotation.set(-90, 0, 0);
 
 		markerEl.appendChild(textEl);
+
+		model
 
 		for(var k=1; k<18; k++)
 		{
