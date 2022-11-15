@@ -55,8 +55,6 @@ AFRAME.registerComponent('markers_start',{
 
 		markerEl.appendChild(textEl);
 
-		model
-
 		for(var k=1; k<18; k++)
 		{
 			var markerEl = document.createElement('a-marker');
