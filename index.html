@@ -13,17 +13,17 @@
 <link rel="stylesheet" href="./css/styles.css">
 
 <body style="margin : 0px; overflow: hidden;">
-    <!-- <div class="overlay" id="fullscreen-overlay">
+    <div class="overlay" id="fullscreen-overlay">
         <div class="lato">enter fullscreen</div>
         <button id="fullscreen-button" onclick="requestFullScreen()"></button>
         <div class="lato">for the best experience</div>
-    </div> -->
-    <!-- <div class="overlay" id="loading-overlay">
+    </div>
+    <div class="overlay" id="loading-overlay">
         <div class="cssload-wrap">
             <div class="cssload-cssload-spinner"></div>
         </div>
-    </div> -->
-    <!-- <div class="overlay" id="rotate-overlay">
+    </div>
+    <div class="overlay" id="rotate-overlay">
         <div class="phone shadow">
             <div class="screen"></div>
         </div>
@@ -37,8 +37,8 @@
             <div class="arrow-head"></div>
         </div>
         <span class="lato">rotate device</span>
-    </div> -->
-    <!-- <div class="overlay" id="snap-overlay">
+    </div>
+    <div class="overlay" id="snap-overlay">
         <span class="lato">capturing...</span>
     </div>
     <div class="overlay" id="preview-overlay">
@@ -50,9 +50,9 @@
                 <button id="retake-button">retake</button>
             </div>
         </div>
-    </div> -->
+    </div>
 
-    <!-- <div id="log"></div> -->
+    <div id="log"></div>
     <section class="log" style="display: none;">
         <div id="positionLog">Position: 0 -0.75 0</div>
         <div id="rotationLog">Rotation: 0 0 0</div>
@@ -73,7 +73,7 @@
         renderer="antialias: true; logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true;">
         <a-marker type="pattern" preset="custom" url="./assets/custom-marker/pattern-custom_marker.patt">
             <a-entity position="0 0 0" rotation="270 0 0">
-                <a-entity id='theModel' position="0 -0.5 0" rotation="0 0 0" scale="12.5 12.5 12.5"
+                <a-entity id='theModel' position="0 -0.5 0" rotation="0 0 0" scale="20 20 20"
                     gltf-model="./assets/3d-models/wafer_scene.glb">
                 </a-entity>
             </a-entity>

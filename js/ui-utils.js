@@ -50,7 +50,8 @@ function makeOverlay(type, operation)
 
         case 'rotate':
             if (operation === 'show')
-                showOverlay(rotateOverlay, '100');
+            // showOverlay(rotateOverlay, '100');
+                hideOverlay(rotateOverlay);
             else if (operation === 'hide')
                 hideOverlay(rotateOverlay);
             break;

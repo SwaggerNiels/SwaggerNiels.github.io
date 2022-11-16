@@ -59,9 +59,9 @@ window.onload = () =>
         makeOverlay('preview', 'hide');
     });
 
-    // entity.addEventListener("model-loaded", () => { makeOverlay('loading', 'hide'); });
-    // window.matchMedia('screen and (orientation:portrait)')
-    //     .addEventListener("change", e => handleOrientation(e));
+    entity.addEventListener("model-loaded", () => { makeOverlay('loading', 'hide'); });
+    window.matchMedia('screen and (orientation:portrait)')
+        .addEventListener("change", e => handleOrientation(e));
     //window.addEventListener("orientationchange", handleOrientation)
     window.addEventListener("fullscreenchange", handleFullScreen, false);
     window.addEventListener('resize', () =>
