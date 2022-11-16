@@ -1,25 +1,3 @@
-<<<<<<< HEAD
-# AFrame_AR_Multimarkers
-WebAR Multi-markers using AFrame and AR.js.
-
-A simple multimarker example using AFrame (0.9.2) and AR.js (2.0.8). 
-Live example here: https://ucl-casa-ce.github.io/AFrame_AR_Multimarkers/ </br>
-Markers are in the MarkerPng folder.</br>
-
-The browser will ask (the first time) to access the camera feed, if available. On iOS check if Camera & Microphone Access is On under Settings -> Safari -> Privacy & Security section.
-
-**How it works?** </br>
-multiMarkersName.js create the <a-marker> tags using the PATT files in the resource folder. Each marker displays a text with its ID.
-
-![ ](MultiMarkers.gif)
-  
-  
-  
-  ---------
-  AFrame https://aframe.io/ https://github.com/aframevr/aframe/ <br/>
-  AR.js https://github.com/jeromeetienne/AR.js
- 
-=======
 # AR Cam
 
 A marker based augmented reality camera app for the web. Powered by [AR.js](https://github.com/AR-js-org/AR.js). Fast, light-weight and works on any phone with [WebGL](https://get.webgl.org/) and [WebRTC](https://webrtc.org/).
@@ -90,4 +68,3 @@ Contributions are always welcome! Feel free to fork and improve the project. Sco
 - [AR.js repo](https://github.com/AR-js-org/AR.js).
 - [AR.js official documtetion](https://ar-js-org.github.io/AR.js-Docs/).
 - [10 tips to enhance your AR.js app](https://medium.com/chialab-open-source/10-tips-to-enhance-your-ar-js-app-8b44c6faffca).
->>>>>>> 12a3a291100b76a2e250380abc133debc4ceb8b2
