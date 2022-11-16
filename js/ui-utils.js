@@ -36,8 +36,7 @@ function makeOverlay(type, operation)
 
         case 'loading':
             if (operation === 'show')
-                hideOverlay(loadingOverlay);
-                // showOverlay(loadingOverlay, '80');
+                showOverlay(loadingOverlay, '80');
             else if (operation === 'hide')
                 hideOverlay(loadingOverlay);
             break;
