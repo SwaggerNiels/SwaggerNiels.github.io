@@ -1,121 +1,64 @@
 <!DOCTYPE html>
 <html>
-        <!-- OLD MARKER VERSION OF AR.JS -->
-<!-- <script src="./js/vendor/aframe.min.js"></script>
-<script src="./js/vendor/aframe-ar.js"></script> -->
+<!-- import aframe and then ar.js with image tracking / location based features -->
+<script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script>
+<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
 
-        <!-- NEW MARKER VERSION OF AR-ORG-JS -->
-<!-- <script src="https://aframe.io/releases/1.0.0/aframe.min.js"></script>
-<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script> -->
-    
-    <!-- NEW NFT VERSION of AR-ORG-JS -->
-    <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
-<!-- <script src="https://aframe.io/releases/1.0.0/aframe.min.js"></script> -->
-<!-- <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.1/aframe/build/aframe-ar-nft.js"></script> -->
+<!-- style for the loader -->
+<style>
+  .arjs-loader {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-
-<script src="./js/vendor/zingtouch.min.js"></script>
-
-<script src="./js/3d-ops.js"></script>
-<script src="./js/ar-cam.js"></script>
-<script src="./js/image-processor.js"></script>
-<script src="./js/ui-utils.js"></script>
-<!-- <script src="./js/debug.js"></script> -->
-
-<link rel="stylesheet" href="./css/styles.css">
+  .arjs-loader div {
+    text-align: center;
+    font-size: 1.25em;
+    color: white;
+  }
+</style>
 
 <body style="margin : 0px; overflow: hidden;">
-    <div class="overlay" id="fullscreen-overlay">
-        <div class="lato">enter fullscreen</div>
-        <button id="fullscreen-button" onclick="requestFullScreen()"></button>
-        <div class="lato">for the best experience</div>
-    </div>
-    <div class="overlay" id="loading-overlay">
-        <div class="cssload-wrap">
-            <div class="cssload-cssload-spinner"></div>
-        </div>
-    </div>
-    <div class="overlay" id="rotate-overlay">
-        <div class="phone shadow">
-            <div class="screen"></div>
-        </div>
-        <div class="phone rotate90">
-            <div class="screen"></div>
-        </div>
-        <div class="arrow-wrap">
-            <div class="arrow-circle">
-                <div class="arrow"></div>
-            </div>
-            <div class="arrow-head"></div>
-        </div>
-        <span class="lato">rotate device</span>
-    </div>
-    <div class="overlay" id="snap-overlay">
-        <span class="lato">capturing...</span>
-    </div>
-    <div class="overlay" id="preview-overlay">
-        <div class="preview-container">
-            <img id="preview-img" src="" alt="preview">
-            <div class="preview-actions">
-                <span class="lato">preview</span>
-                <button id="save-capture-button">save</button>
-                <button id="retake-button">retake</button>
-            </div>
-        </div>
-    </div>
+  <!-- minimal loader shown until image descriptors are loaded. Loading may take a while according to the device computational power -->
+  <div class="arjs-loader">
+    <div>Loading, please wait...</div>
+  </div>
 
-    <div id="log"></div>
-    <section class="log" style="display: none;">
-        <div id="positionLog">Position: 0 -0.75 0</div>
-        <div id="rotationLog">Rotation: 0 0 0</div>
-        <div id="zoomLog">Scale: 0.35</div>
-    </section>
-    <section class="controls">
-        <!--
-        <button onclick="X()">X</button>
-        <button onclick="Y()">Y</button>
-        <button onclick="Z()">Z</button>
-        <button onclick="P()">P</button> 
-        -->
-        <button id="move-button" class="toggler" onclick="toggleMove()"></button>
-        <button id="snap-button" onclick="getSnap()"></button>
-        <button id="rotate-button" class="toggler" onclick="toggleRotate()"></button>
-    </section>
-    <a-scene
-        vr-mode-ui="enabled: false;"
-        renderer="logarithmicDepthBuffer: true; precision: medium;"
-        embedded
-        arjs="trackingMethod: best; sourceType: webcam;debugUIEnabled: true;"
+  <!-- a-frame scene -->
+  <a-scene
+    vr-mode-ui="enabled: false;"
+    renderer="logarithmicDepthBuffer: true;"
+    embedded
+    arjs="trackingMethod: best; sourceType: webcam;debugUIEnabled: false;"
+  >
+    <!-- a-nft is the anchor that defines an Image Tracking entity -->
+    <!-- on 'url' use the path to the Image Descriptors created before. -->
+    <!-- the path should end with the name without the extension e.g. if file is 'pinball.fset' the path should end with 'pinball' -->
+    <a-nft
+      type="nft"
+      url="./assets/nft-markers/test_nft"
+      smooth="true"
+      smoothCount="10"
+      smoothTolerance=".01"
+      smoothThreshold="5"
     >
-        
-        <a-marker type="pattern" preset="custom" url="./assets/custom-marker/pattern-custom_marker.patt">
-            <a-entity position="0 0 0" rotation="270 0 0">
-                <a-entity id='theModel' position="0 -0.5 0" rotation="0 0 0" scale="20 20 20"
-                    gltf-model="./assets/3d-models/wafer_anim.glb" animation-mixer>
-                </a-entity>
-            </a-entity>
-        </a-marker>
-
-        <a-nft
-        type="nft"
-        url="./assets/nft-markers/test_nft"
-        smooth="true"
-        smoothCount="10"
-        smoothTolerance=".01"
-        smoothThreshold="5">
-            <a-entity position="0 0 0" rotation="270 0 0">
-                <a-entity id='theModel' position="0 -0.5 0" rotation="0 0 0" scale="20 20 20"
-                    gltf-model="./assets/3d-models/wafer_scene.glb">
-                </a-entity>
-            </a-entity>
-        </a-nft>
-        <a-entity id="camera" camera></a-entity>
-
-        <a-entity light="type: ambient; color: #BBB"></a-entity>
-        <!-- <a-entity light="type: directional; color: #FFF; intensity: 0.6" position="-0.5 1 1"></a-entity> -->
-        <a-entity light="type: directional; color: #FFF; intensity: 10" position="-0.5 1 1"></a-entity>
-    </a-scene>
+      <!-- as a child of the a-nft entity, you can define the content to show. here's a GLTF model entity -->
+      <a-entity position="0 0 0" rotation="270 0 0">
+        <a-entity id='theModel' position="0 -0.5 0" rotation="0 0 0" scale="20 20 20"
+            gltf-model="./assets/3d-models/wafer_anim.glb" animation-mixer>
+        </a-entity>
+       </a-entity>
+    </a-nft>
+    <!-- static camera that moves according to the device movemenents -->
+    <a-entity camera></a-entity>
+  </a-scene>
 </body>
-
 </html>
