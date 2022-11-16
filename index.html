@@ -74,14 +74,14 @@
         <a-marker type="pattern" preset="custom" url="./assets/custom-marker/pattern-custom_marker.patt">
             <a-entity position="0 0 0" rotation="270 0 0">
                 <a-entity id='theModel' position="0 -0.5 0" rotation="0 0 0" scale="20 20 20"
-                    gltf-model="./assets/3d-models/wafer_anim.glb">
+                    gltf-model="./assets/3d-models/wafer_anim.glb" animation-mixer>
                 </a-entity>
             </a-entity>
         </a-marker>
 
-        <!-- <a-nft
+        <a-nft
         type="nft"
-        url="./assets/nft-markers/test_nft"
+        url="./assets/nft-markers/custom_marker"
         smooth="true"
         smoothCount="10"
         smoothTolerance=".01"
@@ -91,7 +91,7 @@
                     gltf-model="./assets/3d-models/wafer_scene.glb">
                 </a-entity>
             </a-entity>
-        </a-nft> -->
+        </a-nft>
         <a-entity id="camera" camera></a-entity>
 
         <a-entity light="type: ambient; color: #BBB"></a-entity>
