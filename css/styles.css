@@ -11,8 +11,8 @@ button {
 .controls {
     background-color: #00000056;
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
+    align-items: bottom;
     justify-content: center;
     width: 100%;
     height: 120px;
