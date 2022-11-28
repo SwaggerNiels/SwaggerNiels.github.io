@@ -1,138 +1,124 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html>
-        <!-- OLD MARKER VERSION OF AR.JS -->
-<!-- <script src="./js/vendor/aframe.min.js"></script>
-<script src="./js/vendor/aframe-ar.js"></script> -->
+	<head>
+		<meta charset="utf-8" />
+		<title>Poster presentation Niels Burghoorn</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=0.5, maximum-scale=1" />
+		<link rel="stylesheet" href="css/nft-style.css" />
+	</head>
 
-        <!-- NEW MARKER VERSION OF AR-ORG-JS -->
-<!-- <script src="https://aframe.io/releases/1.0.0/aframe.min.js"></script>
-<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script> -->
-    
-    <!-- NEW NFT VERSION of AR-ORG-JS -->
-    <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
-<!-- <script src="https://aframe.io/releases/1.0.0/aframe.min.js"></script> -->
-<!-- <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.1/aframe/build/aframe-ar-nft.js"></script> -->
+	<body>
+		<!-- <a href="https://raw.githubusercontent.com/artoolkitx/artoolkit5/master/doc/Marker%20images/pinball.jpg" class="ui marker" target="_blank">
+			🖼 Marker Image
+		</a> -->
 
+		<script src="js/third_party/three.js/three.min.js"></script>
+		<script src="js/ARnftThreejs.js"></script>
+		<script src="../dist/ARnft.js"></script>
 
-<script src="./js/vendor/zingtouch.min.js"></script>
+		<script>
+			//let nftName = 'poster_banner'
+			let nftName_1 = 'poster';
+			let model_1 = 'well_9';
 
-<script src="./js/3d-ops.js"></script>
-<script src="./js/ar-cam.js"></script>
-<script src="./js/image-processor.js"></script>
-<script src="./js/ui-utils.js"></script>
-<script src="./js/debug.js"></script>
+			let width = 320;
+      		let height = 640;
 
-<link rel="stylesheet" href="./css/styles.css">
+			ARnft.ARnft.init(width,height,[["assets/nft-markers/" + nftName_1]],[[nftName_1]],"config.json",true)
+				.then((nft) => {
+					let mat = new THREE.MeshLambertMaterial({
+						color: 0xff0000,
+					});
+					let boxGeom = new THREE.BoxGeometry(1, 1, 1);
+					let cube = new THREE.Mesh(boxGeom, mat);
+					cube.position.z = 90;
+					cube.scale.set(1, 1, 180);
+					
+					let mat2 = new THREE.MeshLambertMaterial({
+						color: 0xff0000,
+					});
+					let boxGeom2 = new THREE.BoxGeometry(1, 1, 1);
+					let cube2 = new THREE.Mesh(boxGeom, mat);
+					cube2.position.z = 200;
+					cube2.scale.set(10, 10, 10);
 
-<body style="margin : 0px; overflow: hidden;">
-    <div class="overlay" id="fullscreen-overlay">
-        <div class="lato">enter fullscreen</div>
-        <button id="fullscreen-button" onclick="requestFullScreen()"></button>
-        <div class="lato">for the best experience</div>
-    </div>
-    <div class="overlay" id="loading-overlay">
-        <div class="cssload-wrap">
-            <div class="cssload-cssload-spinner"></div>
-        </div>
-    </div>
-    <div class="overlay" id="rotate-overlay">
-        <div class="phone shadow">
-            <div class="screen"></div>
-        </div>
-        <div class="phone rotate90">
-            <div class="screen"></div>
-        </div>
-        <div class="arrow-wrap">
-            <div class="arrow-circle">
-                <div class="arrow"></div>
-            </div>
-            <div class="arrow-head"></div>
-        </div>
-        <span class="lato">rotate device</span>
-    </div>
-    <div class="overlay" id="snap-overlay">
-        <span class="lato">capturing...</span>
-    </div>
-    <div class="overlay" id="preview-overlay">
-        <div class="preview-container">
-            <img id="preview-img" src="" alt="preview">
-            <div class="preview-actions">
-                <span class="lato">preview</span>
-                <button id="save-capture-button">save</button>
-                <button id="retake-button">retake</button>
-            </div>
-        </div>
-    </div>
+					let testEntities = ARnft.ARnft.getEntities();
+                	console.log("entities from getEntities static method: ", testEntities);
 
-    <div id="log"></div>
-    <section class="log" style="display: none;">
-        <div id="positionLog">Position: 0 -0.75 0</div>
-        <div id="rotationLog">Rotation: 0 0 0</div>
-        <div id="zoomLog">Scale: 0.35</div>
-    </section>
-    <section class="controls">
-        <!--
-        <button onclick="X()">X</button>
-        <button onclick="Y()">Y</button>
-        <button onclick="Z()">Z</button>
-        <button onclick="P()">P</button> 
-        -->
-        <button id="move-button" class="toggler" onclick="toggleMove()"></button>
-        <button id="snap-button" onclick="getSnap()"></button>
-        <button id="rotate-button" class="toggler" onclick="toggleRotate()"></button>
-    </section>
-    <a-scene
-        vr-mode-ui="enabled: false;"
-        renderer="logarithmicDepthBuffer: true; precision: medium;"
-        embedded
-        arjs="trackingMethod: best; sourceType: webcam;debugUIEnabled: true;"
-    >
-        
-        <!-- <a-marker type="pattern" preset="custom" url="./assets/custom-marker/pattern-custom_marker.patt">
-            <a-entity position="0 0 0" rotation="270 0 0">
-                <a-entity id='theModel' position="0 -0.5 0" rotation="0 0 0" scale="20 20 20"
-                    gltf-model="./assets/3d-models/wafer_anim.glb" animation-mixer>
-                </a-entity>
-            </a-entity>
-            url="https://raw.githack.com/SwaggerNiels/SwaggerNiels.github.io/tree/main/assets/nft-markers/test_nft"
-        </a-marker> -->
+					document.addEventListener("containerEvent", function (ev) {
+						let canvas = document.getElementById("canvas");
+						let fov = (0.8 * 180) / Math.PI;
+						let ratio = width / height;
+						let config = {
+							renderer: {
+								alpha: true,
+								antialias: true,
+								context: null,
+								precision: "mediump",
+								premultipliedAlpha: true,
+								stencil: true,
+								depth: true,
+								logarithmicDepthBuffer: true,
+							},
+							camera: {
+								fov: fov,
+								ratio: ratio,
+								near: 0.01,
+								far: 1000,
+							},
+						};
 
-        <a-nft
-            type="nft"
-            url="https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/nft/trex/trex-image/trex"
-            smooth="true"
-            smoothCount="10"
-            smoothTolerance=".01"
-            smoothThreshold="5"
-            >
-            <a-entity
-                gltf-model="https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/nft/trex/scene.gltf"
-                scale="5 5 5"
-                position="100 0 -300"
-                rotation="270 0 0"
-            >
-            </a-entity>
-        </a-nft>
-        <!-- <a-nft
-        type="nft"
-        url="https://swaggerniels.github.io/assets/nft-markers/test_nft"
-        smooth="true"
-        smoothCount="10"
-        smoothTolerance=".01"
-        smoothThreshold="5">
-            <a-entity position="0 0 0" rotation="270 0 0">
-                <a-entity id='theModel' position="0 -0.5 0" rotation="0 0 0" scale="20 20 20"
-                    gltf-model="https://swaggerniels.github.io/assets/3d-models/wafer_anim.glb" animation-mixer>
-                </a-entity>
-            </a-entity>
-        </a-nft> -->
-        <a-entity id="camera" camera></a-entity>
+						let sceneThreejs = new ARnftThreejs.SceneRendererTJS(config, canvas, nft.uuid, true);
+						sceneThreejs.initRenderer();
 
-        <a-entity light="type: ambient; color: #BBB"></a-entity>
-        <!-- <a-entity light="type: directional; color: #FFF; intensity: 0.6" position="-0.5 1 1"></a-entity> -->
-        <a-entity light="type: directional; color: #FFF; intensity: 10" position="-0.5 1 1"></a-entity>
-    </a-scene>
-</body>
+						
+						const renderer = sceneThreejs.getRenderer();
+						const scene = sceneThreejs.getScene();
+						renderer.outputEncoding = THREE.sRGBEncoding;
+						renderer.physicallyCorrectLights = true;
+						let directionalLight = new THREE.DirectionalLight("#fff", 10);
+						directionalLight.position.set(0.5, 0, 0.866);7
+						scene.add(directionalLight);
+						
+						let nftAddTJS = new ARnftThreejs.NFTaddTJS(nft.uuid);
+						nftAddTJS.oef = true;
+						
+						//nftAddTJS.add(cube2, nftName_1, false);
+						nftAddTJS.add(cube, nftName_1, false);
+            			nftAddTJS.addModel('assets/3d-models/'+ model_1 +'.glb', nftName_1, 25, false);
+						
+						const tick = () => {
+							sceneThreejs.draw();
+							window.requestAnimationFrame(tick);
+							//updateAnimations();
+						};
+						tick();
+            
+            // let mixers = [];
+            // let clock = new THREE.Clock();
+            // function modelAnimation(gltf) {
+            //     var model = gltf.scene.children[0];
+            //     model.rotation.x = Math.PI / 2;
+            //     var animation = gltf.animations[0];
+            //     var mixer = new THREE.AnimationMixer(model);
+            //     mixers.push(mixer);
+            //     var action = mixer.clipAction(animation);
+            //     action.play();
+            // }
+            // function updateAnimations() {
+            //     if (mixers.length > 0) {
+            //         for (var i = 0; i < mixers.length; i++) {
+            //             mixers[i].update(clock.getDelta());
+            //         }
+            //     }
+            // }
 
+            //nftAddTJS.addModelWithCallback("assets/3d-models/test_anim10.glb", "poster_banner", modelAnimation, false);
+        });
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+    </script>
+	</body>
 </html>

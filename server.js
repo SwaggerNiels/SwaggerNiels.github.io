@@ -5,7 +5,7 @@ const port = 1234;
 
 //Create HTTP server and listen on port 3000 for requests
 var fs = require('fs');
-fs.readFile('./index.html', function (err, html) {
+fs.readFile('./index_testing.html', function (err, html) {
 
     if (err) throw err;    
 
