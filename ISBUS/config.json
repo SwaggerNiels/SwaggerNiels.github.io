@@ -1,5 +1,5 @@
 {
-  "addPath": "",
+  "addPath": "ISBUS",
   "cameraPara": "assets/camera_para.dat",
   "container": {
     "create": true,
