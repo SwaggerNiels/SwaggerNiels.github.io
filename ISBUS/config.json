@@ -21,8 +21,8 @@
   "loading": {
     "create": true,
     "logo": {
-      "src": "assets/arNFT-logo.gif",
-      "alt": "arNFT.js logo"
+      "src": "assets/us_signal_.gif",
+      "alt": "us_signal_"
     },
     "loadingMessage": "Loading, please wait..."
   },

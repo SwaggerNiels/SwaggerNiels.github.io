@@ -20,6 +20,14 @@
 			🖼 Marker Image
 		</a>
 
+		<label class="switch">
+			<input type="checkbox" checked>
+			<span class="slider round"></span>
+		</label>
+	
+		<div id="main_content">Slider 1</div>
+		<div id="secondary_content">Slider 2</div>
+
 		<script src="js/third_party/three.js/three.min.js"></script>
 		<script src="js/ARnftThreejs.js"></script>
 		<script src="dist/ARnft.js"></script>
@@ -35,7 +43,7 @@
 
 			let nftName_1 = 'ISBUS_poster';
 			let model_1 = 'anim' + '.glb';
-			fetch("assets/3d-models/" + model_1, {cache : 'no-'})
+			fetch("assets/3d-models/" + model_1, {cache : 'no-cache'})
 
 			//fetch("assets/nft-markers/poster.fset", {cache : 'no-cache'})
 			//fetch("assets/nft-markers/poster.fset3", {cache : 'no-cache'})
@@ -149,14 +157,5 @@
 					console.log(error);
 				});
     </script>
-
-	<label class="switch">
-		<input type="checkbox" checked>
-		<span class="slider round"></span>
-	</label>
-
-	<div id="main_content">Slider 1</div>
-	<div id="secondary_content">Slider 2</div>
-	
-	</body>
+</body>
 </html>
