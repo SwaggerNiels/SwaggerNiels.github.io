@@ -24,7 +24,7 @@
       "src": "assets/us_signal_.gif",
       "alt": "us_signal_"
     },
-    "loadingMessage": "Loading, please wait..."
+    "loadingMessage": "Loading 3D models..."
   },
   "stats": {
     "createHtml": true
