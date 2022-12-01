@@ -8,21 +8,38 @@
 	</head>
 
 	<body>
-		<!-- <a href="https://raw.githubusercontent.com/artoolkitx/artoolkit5/master/doc/Marker%20images/pinball.jpg" class="ui marker" target="_blank">
-			🖼 Marker Image
-		</a> -->
+		<!-- <video loop autoplay muted webkit-playsinline playsinline crossOrigin="anonymous" id="arvideo">
+			<source src="assets/develop.mp4" type='video/mp4'>
+		</video> -->
 
-		<script>
-			//location.reload(true);
-		</script>
+		<!-- <video loop autoplay muted webkit-playsinline playsinline crossOrigin="anonymous" id="arvideo">
+			<source src="https://avo-content-dev.s3.amazonaws.com/videos/bg_1588085276090.mp4" type='video/mp4'>
+		</video> -->
+		<a href="https://raw.githubusercontent.com/artoolkitx/artoolkit5/master/doc/Marker%20images/pinball.jpg"
+			class="ui marker" target="_blank">
+			🖼 Marker Image
+		</a>
+
 		<script src="js/third_party/three.js/three.min.js"></script>
 		<script src="js/ARnftThreejs.js"></script>
 		<script src="dist/ARnft.js"></script>
-
+		
 		<script>
-			//let nftName = 'poster_banner'
-			let nftName_1 = 'poster';
-			let model_1 = 'well_9';
+			function toggle(button) {
+				if (button.value == "OFF") {
+				  button.value = "ON";
+				} else {
+				  button.value = "OFF";
+				}
+			}
+
+			let nftName_1 = 'ISBUS_poster';
+			let model_1 = 'anim' + '.glb';
+			fetch("assets/3d-models/" + model_1, {cache : 'no-'})
+
+			//fetch("assets/nft-markers/poster.fset", {cache : 'no-cache'})
+			//fetch("assets/nft-markers/poster.fset3", {cache : 'no-cache'})
+			//fetch("assets/nft-markers/poster.iset", {cache : 'no-cache'})
 
 			let width = 320;
       		let height = 640;
@@ -36,17 +53,9 @@
 					let cube = new THREE.Mesh(boxGeom, mat);
 					cube.position.z = 90;
 					cube.scale.set(1, 1, 180);
-					
-					let mat2 = new THREE.MeshLambertMaterial({
-						color: 0xff0000,
-					});
-					let boxGeom2 = new THREE.BoxGeometry(1, 1, 1);
-					let cube2 = new THREE.Mesh(boxGeom, mat);
-					cube2.position.z = 200;
-					cube2.scale.set(10, 10, 10);
 
-					let testEntities = ARnft.ARnft.getEntities();
-                	console.log("entities from getEntities static method: ", testEntities);
+					//let testEntities = ARnft.ARnft.getEntities();
+                	//console.log("entities from getEntities static method: ", testEntities);
 
 					document.addEventListener("containerEvent", function (ev) {
 						let canvas = document.getElementById("canvas");
@@ -64,7 +73,7 @@
 								logarithmicDepthBuffer: true,
 							},
 							camera: {
-								fov: fov,
+								fov: 23,//fov,
 								ratio: ratio,
 								near: 0.01,
 								far: 1000,
@@ -85,43 +94,69 @@
 						
 						let nftAddTJS = new ARnftThreejs.NFTaddTJS(nft.uuid);
 						nftAddTJS.oef = true;
+
+						//const delay = ms => new Promise(res => setTimeout(res, ms));
+						//const yourFunction = async () => {
+						//	await delay(5000);
+						//	console.log("Waited 5s");
+						//};
 						
-						//nftAddTJS.add(cube2, nftName_1, false);
+						//load indicator
 						nftAddTJS.add(cube, nftName_1, false);
-            			nftAddTJS.addModel('assets/3d-models/'+ model_1 +'.glb', nftName_1, 25, false);
+						
+						//video load
+						//let imgConfig = {w: 1, h: 1, ws: 1, hs: 1};
+                    	//let videoObj = nftAddTJS.addVideo('arvideo', nftName_1, 180, imgConfig, false);
+						//videoObj.position.set(20,20,20);
+
+						//animation load
+						let mixers = [];
+						let clock = new THREE.Clock();
+						
+						function modelAnimation(gltf) {
+							var model = gltf.scene.children[0];
+							//model.position.x = 135;
+							//model.position.y = 160;
+							//model.position.z = -60;
+
+							var animation = gltf.animations[0];
+
+							var mixer = new THREE.AnimationMixer(model);
+							mixers.push(mixer);
+							var action = mixer.clipAction(animation);
+							action.play();
+						}
+
+						function updateAnimations() {
+							if (mixers.length > 0) {
+								for (var i = 0; i < mixers.length; i++) {
+									mixers[i].update(clock.getDelta());
+								}
+							}
+						}
+						
+						nftAddTJS.addModelWithCallback('assets/3d-models/'+ model_1, nftName_1, modelAnimation, true);
 						
 						const tick = () => {
 							sceneThreejs.draw();
 							window.requestAnimationFrame(tick);
-							//updateAnimations();
+							updateAnimations();
 						};
 						tick();
-            
-            // let mixers = [];
-            // let clock = new THREE.Clock();
-            // function modelAnimation(gltf) {
-            //     var model = gltf.scene.children[0];
-            //     model.rotation.x = Math.PI / 2;
-            //     var animation = gltf.animations[0];
-            //     var mixer = new THREE.AnimationMixer(model);
-            //     mixers.push(mixer);
-            //     var action = mixer.clipAction(animation);
-            //     action.play();
-            // }
-            // function updateAnimations() {
-            //     if (mixers.length > 0) {
-            //         for (var i = 0; i < mixers.length; i++) {
-            //             mixers[i].update(clock.getDelta());
-            //         }
-            //     }
-            // }
-
-            //nftAddTJS.addModelWithCallback("assets/3d-models/test_anim10.glb", "poster_banner", modelAnimation, false);
-        });
-    })
-    .catch((error) => {
-        console.log(error);
-    });
+					});
+				})
+				.catch((error) => {
+					console.log(error);
+				});
     </script>
+
+	<label class="switch">
+		<input type="checkbox" checked>
+		<span class="slider round"></span>
+	</label>
+
+	<div id="main_content">Slider 1</div>
+	<div id="secondary_content">Slider 2</div>
+	
 	</body>
 </html>
