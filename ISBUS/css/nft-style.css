@@ -32,10 +32,23 @@ html {
 
 /* slider and switch */
 
+LABEL.indented-checkbox-text
+{
+  padding-top: 1em;
+  margin-left: 2.5em;
+  display: block;
+  position: absolute;
+  margin-top: -1.4em;  /* make this margin match whatever your line-height is */
+  line-height: 1.4em;  /* can be set here, or elsewehere */
+}
+
 .switch {
+  margin-right: 20%;
   position: relative;
+  top: 0%;
+  left: 20%;
   display: inline-block;
-  width: 60px;
+  width: 34px;
   height: 34px;
   z-index: 200;
 }
