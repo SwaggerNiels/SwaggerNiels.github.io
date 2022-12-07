@@ -32,7 +32,7 @@
 		
 		<script>
 			let nftName_1 = 'ISBUS_poster';
-			let model_1 = 'anim9' + '.glb';
+			let model_1 = 'anim10' + '.glb';
 			
 			//fetch("assets/3d-models/" + model_1, {cache : 'no-cache'})
 
@@ -108,37 +108,22 @@
 						const reflectionCube = new THREE.CubeTextureLoader().load( urls );
 						reflectionCube.encoding = THREE.sRGBEncoding;
 
-						// material
-
-						let shiny_material = new THREE.MeshStandardMaterial( {
-
-							color: 0x888888,
-							roughness: .1,
-							metalness: 1,
-
-							envMap: reflectionCube,
-							envMapIntensity: 1,
-
-							side: THREE.DoubleSide
-
-						} );
-
 						//animation load
 						let mixers = [];
 						let clock = new THREE.Clock();
 
 						function modelAnimation(gltf) {
 							var model = gltf.scene.children[0];
-							console.log(model.children[8].material);
-							//model.children[8].material.roughness = .1;
-							//model.children[8].material.metalness = 1;
-							model.children[8].material.envMap = reflectionCube;
-							//model.children[8].material.envMapIntensity = 1;
-							//model.children[8].material = shiny_material;
 
-							console.log(model.children[8].material);
+							model.children[7].material.envMap = reflectionCube;
+							model.children[7].material.envMapIntensity = 5;
+							
+							model.children[8].material.envMap = reflectionCube;
+							model.children[8].material.envMapIntensity = 7;
 							
 							model.children[9].material.envMap = reflectionCube;
+							model.children[9].material.envMapIntensity = 5;
+
 							var animation = gltf.animations[0];
 
 							var mixer = new THREE.AnimationMixer(model);
