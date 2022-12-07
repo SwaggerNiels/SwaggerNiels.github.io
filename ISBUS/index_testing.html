@@ -1,161 +1,269 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 	<head>
-		<meta charset="utf-8" />
-		<title>Poster presentation Niels Burghoorn</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=0.5, maximum-scale=1" />
-		<link rel="stylesheet" href="css/nft-style.css" />
+		<title>three.js webgl - materials - displacement map</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
 	</head>
 
 	<body>
-		<a href="https://www.linkedin.com/posts/niels-burghoorn_woohoo-i-graduated-at-the-department-of-bioelectronics-activity-6990975038187307008-m8mL/"
-			class="ui marker" target="_blank">
-			🖼 Project video
-		</a>
-		<label class="switch">
-			<input type="checkbox" id="posCheck">
-			<label for="posCheck" class="indented-checkbox-text">Correct position</label>
-			<span class="slider round"></span>
-		</label>
-		<label class="switch">
-			<input type="checkbox" id="animCheck">
-			<label for="animCheck" class="indented-checkbox-text">Animate</label>
-			<span class="slider round"></span>
-		</label>
 
-		<script src="js/third_party/three.js/three.min.js"></script>
-		<script src="js/ARnftThreejs.js"></script>
-		<script src="dist/ARnft.js"></script>
-		
-		<script>
-			let nftName_1 = 'ISBUS_poster';
-			let model_1 = 'anim' + '.glb';
-			fetch("assets/3d-models/" + model_1, {cache : 'no-cache'})
+		<div id="info">
+			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - (normal + ao + displacement + environment) map demo.<br />
+			ninja head from <a href="https://gpuopen.com/archive/gamescgi/amd-gpu-meshmapper/" target="_blank" rel="noopener">AMD GPU MeshMapper</a>
+		</div>
 
-			fetch("css/nft-style.css")
-			//fetch("assets/nft-markers/poster.fset", {cache : 'no-cache'})
-			//fetch("assets/nft-markers/poster.fset3", {cache : 'no-cache'})
-			//fetch("assets/nft-markers/poster.iset", {cache : 'no-cache'})
+		<!-- Import maps polyfill -->
+		<!-- Remove this when import maps will be widely supported -->
+		<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
 
-			let width = 320;
-      		let height = 640;
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "../build/three.module.js",
+					"three/addons/": "./jsm/"
+				}
+			}
+		</script>
 
-			ARnft.ARnft.init(width,height,[["assets/nft-markers/" + nftName_1]],[[nftName_1]],"config.json",false)
-				.then((nft) => {
-					let mat = new THREE.MeshLambertMaterial({
-						color: 0xff0000,
-					});
-					let boxGeom = new THREE.BoxGeometry(1, 1, 1);
-					let cube = new THREE.Mesh(boxGeom, mat);
-					cube.position.z = 90;
-					cube.scale.set(1, 1, 180);
+		<script type="module">
 
-					//let testEntities = ARnft.ARnft.getEntities();
-                	//console.log("entities from getEntities static method: ", testEntities);
+			import * as THREE from 'three';
 
-					document.addEventListener("containerEvent", function (ev) {
-						let canvas = document.getElementById("canvas");
-						let fov = (0.8 * 180) / Math.PI;
-						let ratio = width / height;
-						let config = {
-							renderer: {
-								alpha: true,
-								antialias: true,
-								context: null,
-								precision: "mediump",
-								premultipliedAlpha: true,
-								stencil: true,
-								depth: true,
-								logarithmicDepthBuffer: true,
-							},
-							camera: {
-								fov: 23,//fov,
-								ratio: ratio,
-								near: 0.01,
-								far: 1000,
-							},
-						};
+			import Stats from 'three/addons/libs/stats.module.js';
 
-						let sceneThreejs = new ARnftThreejs.SceneRendererTJS(config, canvas, nft.uuid, true);
-						sceneThreejs.initRenderer();
+			import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+			import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+			let stats;
 
-						
-						const renderer = sceneThreejs.getRenderer();
-						const scene = sceneThreejs.getScene();
-						renderer.outputEncoding = THREE.sRGBEncoding;
-						renderer.physicallyCorrectLights = true;
-						let directionalLight = new THREE.DirectionalLight("#fff", 10);
-						directionalLight.position.set(0.5, 0, 0.866);7
-						scene.add(directionalLight);
-						
-						let nftAddTJS = new ARnftThreejs.NFTaddTJS(nft.uuid);
-						nftAddTJS.oef = true;
+			let camera, scene, renderer, controls;
+			const settings = {
+				metalness: 1.0,
+				roughness: 0.4,
+				ambientIntensity: 0.2,
+				aoMapIntensity: 1.0,
+				envMapIntensity: 1.0,
+				displacementScale: 2.436143, // from original model
+				normalScale: 1.0
+			};
 
-						//const delay = ms => new Promise(res => setTimeout(res, ms));
-						//const yourFunction = async () => {
-						//	await delay(5000);
-						//	console.log("Waited 5s");
-						//};
-						
-						//load indicator
-						nftAddTJS.add(cube, nftName_1, false);
-						
-						//video load
-						//let imgConfig = {w: 1, h: 1, ws: 1, hs: 1};
-                    	//let videoObj = nftAddTJS.addVideo('arvideo', nftName_1, 180, imgConfig, false);
-						//videoObj.position.set(20,20,20);
+			let mesh, material;
 
-						//animation load
-						let mixers = [];
-						let clock = new THREE.Clock();
+			let pointLight, ambientLight;
 
-						function modelAnimation(gltf) {
-							var model = gltf.scene.children[0];
-							var animation = gltf.animations[0];
+			const height = 500; // of camera frustum
 
-							var mixer = new THREE.AnimationMixer(model);
-							mixers.push(mixer);
-							var action = mixer.clipAction(animation);
-							action.play();
-						}
+			let r = 0.0;
 
-						function rotate(mixer) {
-							mixer.getRoot().rotation.x += 1;
-						}
+			init();
+			animate();
+			initGui();
 
-						function updateAnimations() {
-							if (mixers.length > 0) {
-								for (var i = 0; i < mixers.length; i++) {
-									if (document.getElementById("animCheck").checked == true) {
-										mixers[i].update(clock.getDelta());
-									}
-									
-									let model = mixers[i].getRoot();
-									if (document.getElementById("posCheck").checked == true) {
-										model.position.x = 135;
-										model.position.y = 160;
-										model.position.z = -60;
-									} else {
-										model.position.x = 0;
-										model.position.y = 0;
-										model.position.z = 0;
-									}
-								}
-							}
-						}
-						
-						nftAddTJS.addModelWithCallback('assets/3d-models/'+ model_1, nftName_1, modelAnimation, false);
-						
-						const tick = () => {
-							sceneThreejs.draw();
-							window.requestAnimationFrame(tick);
-							updateAnimations();
-						};
-						tick();
-					});
-				})
-				.catch((error) => {
-					console.log(error);
-				});
-    </script>
-</body>
+			// Init gui
+			function initGui() {
+
+				const gui = new GUI();
+				//let gui = gui.addFolder( "Material" );
+				gui.add( settings, 'metalness' ).min( 0 ).max( 1 ).onChange( function ( value ) {
+
+					material.metalness = value;
+
+				} );
+
+				gui.add( settings, 'roughness' ).min( 0 ).max( 1 ).onChange( function ( value ) {
+
+					material.roughness = value;
+
+				} );
+
+				gui.add( settings, 'aoMapIntensity' ).min( 0 ).max( 1 ).onChange( function ( value ) {
+
+					material.aoMapIntensity = value;
+
+				} );
+
+				gui.add( settings, 'ambientIntensity' ).min( 0 ).max( 1 ).onChange( function ( value ) {
+
+					ambientLight.intensity = value;
+
+				} );
+
+				gui.add( settings, 'envMapIntensity' ).min( 0 ).max( 3 ).onChange( function ( value ) {
+
+					material.envMapIntensity = value;
+
+				} );
+
+				gui.add( settings, 'displacementScale' ).min( 0 ).max( 3.0 ).onChange( function ( value ) {
+
+					material.displacementScale = value;
+
+				} );
+
+				gui.add( settings, 'normalScale' ).min( - 1 ).max( 1 ).onChange( function ( value ) {
+
+					material.normalScale.set( 1, - 1 ).multiplyScalar( value );
+
+				} );
+
+			}
+
+			function init() {
+
+				const container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+				renderer.outputEncoding = THREE.sRGBEncoding;
+
+				//
+
+				scene = new THREE.Scene();
+
+				const aspect = window.innerWidth / window.innerHeight;
+				camera = new THREE.OrthographicCamera( - height * aspect, height * aspect, height, - height, 1, 10000 );
+				camera.position.z = 1500;
+				scene.add( camera );
+
+				controls = new OrbitControls( camera, renderer.domElement );
+				controls.enableZoom = false;
+				controls.enableDamping = true;
+
+				// lights
+
+				ambientLight = new THREE.AmbientLight( 0xffffff, settings.ambientIntensity );
+				scene.add( ambientLight );
+
+				pointLight = new THREE.PointLight( 0xff0000, 0.5 );
+				pointLight.position.z = 2500;
+				scene.add( pointLight );
+
+				const pointLight2 = new THREE.PointLight( 0xff6666, 1 );
+				camera.add( pointLight2 );
+
+				const pointLight3 = new THREE.PointLight( 0x0000ff, 0.5 );
+				pointLight3.position.x = - 1000;
+				pointLight3.position.z = 1000;
+				scene.add( pointLight3 );
+
+				// env map
+
+				const path = 'textures/cube/SwedishRoyalCastle/';
+				const format = '.jpg';
+				const urls = [
+					path + 'px' + format, path + 'nx' + format,
+					path + 'py' + format, path + 'ny' + format,
+					path + 'pz' + format, path + 'nz' + format
+				];
+
+				const reflectionCube = new THREE.CubeTextureLoader().load( urls );
+				reflectionCube.encoding = THREE.sRGBEncoding;
+
+				// textures
+
+				const textureLoader = new THREE.TextureLoader();
+				const normalMap = textureLoader.load( 'models/obj/ninja/normal.png' );
+				const aoMap = textureLoader.load( 'models/obj/ninja/ao.jpg' );
+				const displacementMap = textureLoader.load( 'models/obj/ninja/displacement.jpg' );
+
+				// material
+
+				material = new THREE.MeshStandardMaterial( {
+
+					color: 0x888888,
+					roughness: settings.roughness,
+					metalness: settings.metalness,
+
+					normalMap: normalMap,
+					normalScale: new THREE.Vector2( 1, - 1 ), // why does the normal map require negation in this case?
+
+					aoMap: aoMap,
+					aoMapIntensity: 1,
+
+					displacementMap: displacementMap,
+					displacementScale: settings.displacementScale,
+					displacementBias: - 0.428408, // from original model
+
+					envMap: reflectionCube,
+					envMapIntensity: settings.envMapIntensity,
+
+					side: THREE.DoubleSide
+
+				} );
+
+				//
+
+				const loader = new OBJLoader();
+				loader.load( 'models/obj/ninja/ninjaHead_Low.obj', function ( group ) {
+
+					const geometry = group.children[ 0 ].geometry;
+					geometry.attributes.uv2 = geometry.attributes.uv;
+					geometry.center();
+
+					mesh = new THREE.Mesh( geometry, material );
+					mesh.scale.multiplyScalar( 25 );
+					scene.add( mesh );
+
+				} );
+
+				//
+
+				stats = new Stats();
+				container.appendChild( stats.dom );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize );
+
+			}
+
+			function onWindowResize() {
+
+				const aspect = window.innerWidth / window.innerHeight;
+
+				camera.left = - height * aspect;
+				camera.right = height * aspect;
+				camera.top = height;
+				camera.bottom = - height;
+
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				controls.update();
+
+				stats.begin();
+				render();
+				stats.end();
+
+			}
+
+			function render() {
+
+				pointLight.position.x = 2500 * Math.cos( r );
+				pointLight.position.z = 2500 * Math.sin( r );
+
+				r += 0.01;
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+
 </html>

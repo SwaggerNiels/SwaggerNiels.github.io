@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 	<head>
 		<meta charset="utf-8" />
@@ -11,33 +12,36 @@
 			class="ui marker" target="_blank">
 			🖼 Project video
 		</a>
+
 		<label class="switch">
 			<input type="checkbox" id="posCheck">
 			<label for="posCheck" class="indented-checkbox-text">Correct position</label>
 			<span class="slider round"></span>
 		</label>
-		<label class="switch">
+		<label class="switch2">
 			<input type="checkbox" id="animCheck">
 			<label for="animCheck" class="indented-checkbox-text">Animate</label>
 			<span class="slider round"></span>
 		</label>
-
+		
 		<script src="js/third_party/three.js/three.min.js"></script>
 		<script src="js/ARnftThreejs.js"></script>
+		<script src="js/RGBELoader.js"></script>
+		<!-- <script src="js/PMREMGenerator.js"></script> -->
 		<script src="dist/ARnft.js"></script>
 		
 		<script>
 			let nftName_1 = 'ISBUS_poster';
-			let model_1 = 'anim' + '.glb';
-			fetch("assets/3d-models/" + model_1, {cache : 'no-cache'})
+			let model_1 = 'anim8' + '.glb';
+			
+			//fetch("assets/3d-models/" + model_1, {cache : 'no-cache'})
 
-			fetch("css/nft-style.css")
-			//fetch("assets/nft-markers/poster.fset", {cache : 'no-cache'})
-			//fetch("assets/nft-markers/poster.fset3", {cache : 'no-cache'})
-			//fetch("assets/nft-markers/poster.iset", {cache : 'no-cache'})
+			//fetch("assets/nft-markers/ISBUS_poster.fset", {cache : 'no-cache'})
+			//fetch("assets/nft-markers/ISBUS_poster.fset3", {cache : 'no-cache'})
+			//fetch("assets/nft-markers/ISBUS_poster.iset", {cache : 'no-cache'})
 
-			let width = 320;
-      		let height = 640;
+			let width = 500;
+      		let height = 500;
 
 			ARnft.ARnft.init(width,height,[["assets/nft-markers/" + nftName_1]],[[nftName_1]],"config.json",false)
 				.then((nft) => {
@@ -68,41 +72,56 @@
 								logarithmicDepthBuffer: true,
 							},
 							camera: {
-								fov: 23,//fov,
+								fov: fov,
 								ratio: ratio,
 								near: 0.01,
 								far: 1000,
 							},
 						};
 
-						let sceneThreejs = new ARnftThreejs.SceneRendererTJS(config, canvas, nft.uuid, true);
+						var sceneThreejs = new ARnftThreejs.SceneRendererTJS(config, canvas, nft.uuid, true);
 						sceneThreejs.initRenderer();
-
 						
 						const renderer = sceneThreejs.getRenderer();
 						const scene = sceneThreejs.getScene();
+
 						renderer.outputEncoding = THREE.sRGBEncoding;
 						renderer.physicallyCorrectLights = true;
-						let directionalLight = new THREE.DirectionalLight("#fff", 10);
+						const ambientLight = new THREE.AmbientLight( 0x404040 , 10); // soft white light
+						scene.add( ambientLight );
+						const directionalLight = new THREE.DirectionalLight("#fff", 10);
 						directionalLight.position.set(0.5, 0, 0.866);7
 						scene.add(directionalLight);
 						
 						let nftAddTJS = new ARnftThreejs.NFTaddTJS(nft.uuid);
 						nftAddTJS.oef = true;
+						
+						//environment texture
+						const path = 'assets/environment/';
+						const format = '.jpg';
+						const urls = [
+							path + 'posx' + format, path + 'negx' + format,
+							path + 'posy' + format, path + 'negy' + format,
+							path + 'posz' + format, path + 'negz' + format
+						];
 
-						//const delay = ms => new Promise(res => setTimeout(res, ms));
-						//const yourFunction = async () => {
-						//	await delay(5000);
-						//	console.log("Waited 5s");
-						//};
-						
-						//load indicator
-						nftAddTJS.add(cube, nftName_1, false);
-						
-						//video load
-						//let imgConfig = {w: 1, h: 1, ws: 1, hs: 1};
-                    	//let videoObj = nftAddTJS.addVideo('arvideo', nftName_1, 180, imgConfig, false);
-						//videoObj.position.set(20,20,20);
+						const reflectionCube = new THREE.CubeTextureLoader().load( urls );
+						reflectionCube.encoding = THREE.sRGBEncoding;
+
+						// material
+
+						let shiny_material = new THREE.MeshStandardMaterial( {
+
+							color: 0x888888,
+							roughness: .1,
+							metalness: 1,
+
+							envMap: reflectionCube,
+							envMapIntensity: 1,
+
+							side: THREE.DoubleSide
+
+						} );
 
 						//animation load
 						let mixers = [];
@@ -110,6 +129,16 @@
 
 						function modelAnimation(gltf) {
 							var model = gltf.scene.children[0];
+							console.log(model.children[8].material);
+							//model.children[8].material.roughness = .1;
+							//model.children[8].material.metalness = 1;
+							model.children[8].material.envMap = reflectionCube;
+							//model.children[8].material.envMapIntensity = 1;
+							//model.children[8].material = shiny_material;
+
+							console.log(model.children[8].material);
+							
+							model.children[9].material.envMap = reflectionCube;
 							var animation = gltf.animations[0];
 
 							var mixer = new THREE.AnimationMixer(model);
@@ -130,6 +159,7 @@
 									}
 									
 									let model = mixers[i].getRoot();
+									
 									if (document.getElementById("posCheck").checked == true) {
 										model.position.x = 135;
 										model.position.y = 160;
@@ -143,8 +173,8 @@
 							}
 						}
 						
-						nftAddTJS.addModelWithCallback('assets/3d-models/'+ model_1, nftName_1, modelAnimation, false);
-						
+						my_model = nftAddTJS.addModelWithCallback('assets/3d-models/'+ model_1, nftName_1, modelAnimation, false);
+
 						const tick = () => {
 							sceneThreejs.draw();
 							window.requestAnimationFrame(tick);

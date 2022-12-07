@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 	<head>
 		<meta charset="utf-8" />
@@ -8,23 +8,42 @@
 	</head>
 
 	<body>
-		<!-- <a href="https://raw.githubusercontent.com/artoolkitx/artoolkit5/master/doc/Marker%20images/pinball.jpg" class="ui marker" target="_blank">
-			🖼 Marker Image
-		</a> -->
+		<a href="https://www.linkedin.com/posts/niels-burghoorn_woohoo-i-graduated-at-the-department-of-bioelectronics-activity-6990975038187307008-m8mL/"
+			class="ui marker" target="_blank">
+			🖼 Project video
+		</a>
 
+		<label class="switch">
+			<input type="checkbox" id="posCheck">
+			<label for="posCheck" class="indented-checkbox-text">Correct position</label>
+			<span class="slider round"></span>
+		</label>
+		<label class="switch2">
+			<input type="checkbox" id="animCheck">
+			<label for="animCheck" class="indented-checkbox-text">Animate</label>
+			<span class="slider round"></span>
+		</label>
+		
 		<script src="js/third_party/three.js/three.min.js"></script>
 		<script src="js/ARnftThreejs.js"></script>
+		<script src="js/RGBELoader.js"></script>
+		<!-- <script src="js/PMREMGenerator.js"></script> -->
 		<script src="dist/ARnft.js"></script>
-
+		
 		<script>
-			//let nftName = 'poster_banner'
-			let nftName_1 = 'poster';
-			let model_1 = 'well_9';
+			let nftName_1 = 'ISBUS_poster';
+			let model_1 = 'anim8' + '.glb';
+			
+			//fetch("assets/3d-models/" + model_1, {cache : 'no-cache'})
 
-			let width = 320;
-      		let height = 640;
+			//fetch("assets/nft-markers/ISBUS_poster.fset", {cache : 'no-cache'})
+			//fetch("assets/nft-markers/ISBUS_poster.fset3", {cache : 'no-cache'})
+			//fetch("assets/nft-markers/ISBUS_poster.iset", {cache : 'no-cache'})
 
-			ARnft.ARnft.init(width,height,[["assets/nft-markers/" + nftName_1]],[[nftName_1]],"config.json",true)
+			let width = 500;
+      		let height = 500;
+
+			ARnft.ARnft.init(width,height,[["assets/nft-markers/" + nftName_1]],[[nftName_1]],"config.json",false)
 				.then((nft) => {
 					let mat = new THREE.MeshLambertMaterial({
 						color: 0xff0000,
@@ -33,17 +52,9 @@
 					let cube = new THREE.Mesh(boxGeom, mat);
 					cube.position.z = 90;
 					cube.scale.set(1, 1, 180);
-					
-					let mat2 = new THREE.MeshLambertMaterial({
-						color: 0xff0000,
-					});
-					let boxGeom2 = new THREE.BoxGeometry(1, 1, 1);
-					let cube2 = new THREE.Mesh(boxGeom, mat);
-					cube2.position.z = 200;
-					cube2.scale.set(10, 10, 10);
 
-					let testEntities = ARnft.ARnft.getEntities();
-                	console.log("entities from getEntities static method: ", testEntities);
+					//let testEntities = ARnft.ARnft.getEntities();
+                	//console.log("entities from getEntities static method: ", testEntities);
 
 					document.addEventListener("containerEvent", function (ev) {
 						let canvas = document.getElementById("canvas");
@@ -68,57 +79,113 @@
 							},
 						};
 
-						let sceneThreejs = new ARnftThreejs.SceneRendererTJS(config, canvas, nft.uuid, true);
+						var sceneThreejs = new ARnftThreejs.SceneRendererTJS(config, canvas, nft.uuid, true);
 						sceneThreejs.initRenderer();
-
 						
 						const renderer = sceneThreejs.getRenderer();
 						const scene = sceneThreejs.getScene();
+
 						renderer.outputEncoding = THREE.sRGBEncoding;
 						renderer.physicallyCorrectLights = true;
-						let directionalLight = new THREE.DirectionalLight("#fff", 10);
+						const ambientLight = new THREE.AmbientLight( 0x404040 , 10); // soft white light
+						scene.add( ambientLight );
+						const directionalLight = new THREE.DirectionalLight("#fff", 10);
 						directionalLight.position.set(0.5, 0, 0.866);7
 						scene.add(directionalLight);
 						
 						let nftAddTJS = new ARnftThreejs.NFTaddTJS(nft.uuid);
 						nftAddTJS.oef = true;
 						
-						//nftAddTJS.add(cube2, nftName_1, false);
-						nftAddTJS.add(cube, nftName_1, false);
-            			nftAddTJS.addModel('assets/3d-models/'+ model_1 +'.glb', nftName_1, 25, false);
+						//environment texture
+						const path = 'assets/environment/';
+						const format = '.jpg';
+						const urls = [
+							path + 'posx' + format, path + 'negx' + format,
+							path + 'posy' + format, path + 'negy' + format,
+							path + 'posz' + format, path + 'negz' + format
+						];
+
+						const reflectionCube = new THREE.CubeTextureLoader().load( urls );
+						reflectionCube.encoding = THREE.sRGBEncoding;
+
+						// material
+
+						let shiny_material = new THREE.MeshStandardMaterial( {
+
+							color: 0x888888,
+							roughness: .1,
+							metalness: 1,
+
+							envMap: reflectionCube,
+							envMapIntensity: 1,
+
+							side: THREE.DoubleSide
+
+						} );
+
+						//animation load
+						let mixers = [];
+						let clock = new THREE.Clock();
+
+						function modelAnimation(gltf) {
+							var model = gltf.scene.children[0];
+							console.log(model.children[8].material);
+							//model.children[8].material.roughness = .1;
+							//model.children[8].material.metalness = 1;
+							model.children[8].material.envMap = reflectionCube;
+							//model.children[8].material.envMapIntensity = 1;
+							//model.children[8].material = shiny_material;
+
+							console.log(model.children[8].material);
+							
+							model.children[9].material.envMap = reflectionCube;
+							var animation = gltf.animations[0];
+
+							var mixer = new THREE.AnimationMixer(model);
+							mixers.push(mixer);
+							var action = mixer.clipAction(animation);
+							action.play();
+						}
+
+						function rotate(mixer) {
+							mixer.getRoot().rotation.x += 1;
+						}
+
+						function updateAnimations() {
+							if (mixers.length > 0) {
+								for (var i = 0; i < mixers.length; i++) {
+									if (document.getElementById("animCheck").checked == true) {
+										mixers[i].update(clock.getDelta());
+									}
+									
+									let model = mixers[i].getRoot();
+									
+									if (document.getElementById("posCheck").checked == true) {
+										model.position.x = 135;
+										model.position.y = 160;
+										model.position.z = -60;
+									} else {
+										model.position.x = 0;
+										model.position.y = 0;
+										model.position.z = 0;
+									}
+								}
+							}
+						}
 						
+						my_model = nftAddTJS.addModelWithCallback('assets/3d-models/'+ model_1, nftName_1, modelAnimation, false);
+
 						const tick = () => {
 							sceneThreejs.draw();
 							window.requestAnimationFrame(tick);
-							//updateAnimations();
+							updateAnimations();
 						};
 						tick();
-            
-            // let mixers = [];
-            // let clock = new THREE.Clock();
-            // function modelAnimation(gltf) {
-            //     var model = gltf.scene.children[0];
-            //     model.rotation.x = Math.PI / 2;
-            //     var animation = gltf.animations[0];
-            //     var mixer = new THREE.AnimationMixer(model);
-            //     mixers.push(mixer);
-            //     var action = mixer.clipAction(animation);
-            //     action.play();
-            // }
-            // function updateAnimations() {
-            //     if (mixers.length > 0) {
-            //         for (var i = 0; i < mixers.length; i++) {
-            //             mixers[i].update(clock.getDelta());
-            //         }
-            //     }
-            // }
-
-            //nftAddTJS.addModelWithCallback("assets/3d-models/test_anim10.glb", "poster_banner", modelAnimation, false);
-        });
-    })
-    .catch((error) => {
-        console.log(error);
-    });
+					});
+				})
+				.catch((error) => {
+					console.log(error);
+				});
     </script>
-	</body>
+</body>
 </html>
