@@ -27,8 +27,8 @@ app = Flask(__name__,
 @app.route('/')
 def index():
     # return render_template('chart.html')
-    return render_template('minimal.html')
-    # return render_template('index_target+3D_test.html')
+    # return render_template('minimal.html')
+    return render_template('index_target+3D_test.html')
 
 @app.route('/calculate_steady_state', methods=['GET'])
 def calculate_steady_state():
