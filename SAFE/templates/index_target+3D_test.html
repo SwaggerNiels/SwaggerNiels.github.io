@@ -1,0 +1,541 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/dist/mindar-image.prod.js"></script>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://raw.githack.com/fcor/arjs-gestures/master/dist/gestures.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Set the font of Chart.js to Tenorite 16pt and make it black -->
+    <script>
+      // Set the font of Chart.js to Tenorite 16pt and make it black
+      Chart.defaults.font.family = 'Tenorite';
+      Chart.defaults.font.size = 15;
+      Chart.defaults.font.weight = 'bold';
+      Chart.defaults.color = 'black';
+
+      // Make the grid lines black and the background white
+      Chart.defaults.scale.grid.color = 'black';
+      Chart.defaults.scale.grid.lineWidth = 1;
+      Chart.defaults.scale.grid.drawOnChartArea = true;
+      Chart.defaults.scale.grid.drawTicks = true;
+
+      // Always tick on zero
+      Chart.defaults.scale.ticks.beginAtZero = true;
+      
+      const sliderValueLabel = 'gate:';
+    </script>
+  </head>
+  <body>
+    
+    <!-- Buttons to start, pause, unpause, stop the AR -->
+    <div id="arButtons" style="position: absolute; z-index: 10000;">
+      <button id="start-button">Start</button>
+      <button id="pause-button">Pause</button>
+      <button id="pause-keep-video-button">Pause (keep video)</button>
+      <button id="unpause-button">UnPause</button>
+      <button id="stop-button">Stop</button>
+    </div>
+
+    <!-- Script to start and stop AR -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        const sceneEl = document.querySelector('a-scene');
+        let arSystem;
+        sceneEl.addEventListener('loaded', function () {
+        arSystem = sceneEl.systems["mindar-image-system"];
+        });
+        const startButton = document.querySelector("#start-button");
+        const stopButton = document.querySelector("#stop-button");
+        const pauseButton = document.querySelector("#pause-button");
+        const pauseKeepVideoButton = document.querySelector("#pause-keep-video-button");
+        const unpauseButton = document.querySelector("#unpause-button");
+        startButton.addEventListener('click', () => {
+          console.log("start");
+          arSystem.start(); // start AR 
+        });
+        stopButton.addEventListener('click', () => {
+          arSystem.stop(); // stop AR 
+        });
+        pauseButton.addEventListener('click', () => {
+          arSystem.pause(); // pause AR, pause video
+        });
+          pauseKeepVideoButton.addEventListener('click', () => {
+          arSystem.pause(true); // pause AR, keep video
+        });
+          unpauseButton.addEventListener('click', () => {
+          arSystem.unpause(); // unpause AR and video
+        });
+        // arReady event triggered when ready
+          sceneEl.addEventListener("arReady", (event) => {
+          // console.log("MindAR is ready")
+        });
+        // arError event triggered when something went wrong. Mostly browser compatbility issue
+          sceneEl.addEventListener("arError", (event) => {
+          // console.log("MindAR failed to start")
+        });
+      });
+    </script>
+
+    <!-- Add toggle and label that switches between the "steady state" and "transient" property -->
+    <div id=toggleTransient style="position: absolute; z-index: 10000">
+      <label for="toggleTransient">Transient:</label>
+      <input type="checkbox" id="toggleTransientCheckbox">
+    </div>
+
+    <!-- Style the toggle button in the top right corner of the screen -->
+    <style>
+      #toggleTransient {
+        position: absolute;
+        bottom: 30%;
+        left: 2%;
+        z-index: 10000;
+      }
+    </style>
+
+    <!-- Slider and graph canvas HTML elements -->
+    <input type="range" id="valueSlider" min="0" max="1" step="0.1" value="0" class="hidden" z-index="10000">
+    <p id="sliderValue">text</p>
+    <canvas id="pyfuncCanvas"></canvas>
+    <script>
+      var sliderValueElement = document.getElementById('sliderValue');
+      sliderValueElement.textContent = sliderValueLabel + '0';
+    </script>
+
+    <!-- Styles for the graph canvas and slider -->
+    <style>
+      #pyfuncCanvas {
+        position: absolute;
+        bottom: 0%;
+        left: 0%; 
+        width: 100% !important;
+        height: 30% !important;
+        z-index: 1000;
+
+        background-color: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(255, 255, 255, 1);
+      }
+      
+      #sliderValue {
+        position: absolute; 
+        bottom: 2px; 
+        height: 3%;
+        left: 2%;
+        width: 15%;
+        z-index: 10000;
+        font-size:16px;
+      }
+      
+      #valueSlider {
+        position: absolute; 
+        bottom: 1%; 
+        height: 5%;
+        left: 15%; 
+        width: 80%;
+        z-index: 10000;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+
+    <!-- Script to set the environment texture -->
+    <script>
+      AFRAME.registerComponent("gltf-name-tag", {
+        init: function() {
+          var targetCube = new THREE.WebGLRenderTargetCube(512, 512);
+          var renderer = this.el.sceneEl.renderer;
+
+          this.el.addEventListener("model-loaded", e => {
+            let mesh = this.el.getObject3D("mesh");
+            
+            var texture = new THREE.TextureLoader().load(
+              "./assets/cubemap/env.jpg",
+              function() {
+                var cubeTex = targetCube.fromEquirectangularTexture(renderer, texture);
+                mesh.traverse(function(el) {
+                  if (el.material) {
+                    el.material.envMap = cubeTex.texture;
+                    el.material.envMap.intensity = 3;
+                    el.material.needsUpdate = true;
+                  }
+                });
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                renderer.outputEncoding = THREE.sRGBEncoding;
+              }
+            );
+          });
+        }
+      });
+    </script>
+
+    <!-- MindAR HTML document -->
+    <!-- mouse-detector -->
+    <a-scene 
+      mindar-image="imageTargetSrc: ./assets/OECT_scale1.mind; filterMinCF:0.0001; filterBeta: 0.00001; warmupTolerance: 5; missTolerance: 30;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights: true, sortObjects: true, premultipliedAlpha: true, logarithmicDepthBuffer="true"
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false"
+      gesture-detector
+      >
+      
+	    <a-light id="dirlight" intensity="1" light="castShadow:true;type:directional" position="1 1 1"></a-light>
+      
+      <a-assets>
+        <a-asset-item id="avatarModel" src="./assets/OECT.gltf"></a-asset-item>
+      </a-assets>
+      
+      <a-entity light="type: ambient; color: #CCC"></a-entity>
+      
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      
+      <!-- Make sure to set the gltf object alpha blend on if you want transparency -->
+      <a-entity mouse-rotation="rotationFactor: 5" gesture-rotation="rotationFactor: 2">
+        <a-entity id="oect" oect mindar-image-target="targetIndex: 0" gesture-handler>
+            <a-gltf-model rotation="0 0 0 " position="0 0 0" scale="0.4 0.4 0.4" src="#avatarModel" 
+            animation-mixer="timeScale:0" 
+            gltf-name-tag
+            gesture-handler>
+        </a-entity>
+      </a-entity>
+
+    </a-scene>
+
+    <!-- Script to register the gestures
+    <script>
+      AFRAME.registerComponent('gesture-handler', {
+        init: function() {
+          // This will be called after the component is attached and the scene is loaded
+          this.el.addEventListener('swipeleft', function(evt) {
+            // Handle the left swipe gesture
+            console.log('Swiped left', evt);
+          });
+          this.el.addEventListener('swiperight', function(evt) {
+            // Handle the right swipe gesture
+            console.log('Swiped right', evt);
+          });
+          // ... other gesture event listeners
+        }
+      });
+    </script> -->
+
+    <!-- Buttons to control the animation, CSS and HTML elements-->
+    <style>
+      #pauseButton {
+        position: absolute;
+        top: 50px;
+        left: 10px;
+        z-index: 1001;
+      }
+      #playButton {
+        position: absolute;
+        top: 50px;
+        left: 60px;
+        z-index: 1001;
+      }
+    </style>
+    <button id="playButton" z-index="1000">Play</button>
+    <button id="pauseButton" z-index="1000">Pause</button>
+
+    <!-- Script to control the animations -->
+    <script>
+      // Wait for the A-Frame scene to load
+      document.addEventListener("DOMContentLoaded", function () {
+        let target = document.querySelector('a-entity[mindar-image-target]');
+
+          function play() {
+            target.childNodes[1].setAttribute("animation-mixer", "timeScale:1") 
+            console.log('pressed play')
+          }
+
+          function pause() {
+            target.childNodes[1].setAttribute("animation-mixer", "timeScale:0") 
+            console.log('pressed pause')
+          }
+
+          // register event listeners for the buttons
+          document.getElementById("playButton").addEventListener('click', play);
+          document.getElementById("pauseButton").addEventListener('click', pause);
+      });
+    </script>
+
+    <!-- Script to draw and update the graph based on the slider -->
+    <script>
+      const valueSlider = document.getElementById('valueSlider');
+      let chart;
+      var config;
+
+      valueSlider.oninput = function() {
+        const formattedValue = parseFloat(valueSlider.value).toFixed(2);
+        sliderValueElement.textContent = sliderValueLabel + (formattedValue >= 0 ? ' ' : '') + formattedValue + 'V';
+      };
+
+      function drawGraph(onloop) {
+        // Draw the graph
+        if (!chart) {
+          chart = new Chart(ctx, config);
+        } else {
+          //clear dataset from chart
+          chart.destroy()
+          chart = new Chart(ctx, config);
+        }
+        // if chart is not "onloop"
+        if (!onloop) {
+          resetChart();
+        }
+      }
+
+      const canvas = document.getElementById('pyfuncCanvas');
+      const ctx = canvas.getContext('2d');
+
+      function fetchAndDrawPyfunc(value, onloop) {
+        // When the toggleTransientCheckbox is checked, use the transient function
+        if (document.getElementById('toggleTransientCheckbox').checked) {
+          console.log('fetching transient');
+          fetch(`/calculate_transient?f=${value}&V_DS=0.1`)
+            .then(response => {
+              console.log("what is f?")
+              console.log(response)
+              return response.json()
+            })
+            .then(data => {
+              console.log(data)
+
+              // Assuming data is an array of arrays, as per your Python function's response
+              const t_values = data.map(item => item[0]);
+              const I_values = data.map(item => item[1]);
+
+              config = {
+                type: 'scatter',
+                data: {
+                  datasets: [{
+                    label: 'I(f)',
+                    data: t_values.map((value, index) => ({ x: value, y: I_values[index] })),
+                    borderColor: 'rgba(0, 0, 0, 1)',
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    showLine: true,
+                  }]
+                },
+                options: {
+                  animation: {
+                    duration: 10,
+                  },
+                  aspectRatio: 1.5,
+                  layout: {
+                    padding: {
+                      bottom: 50 // Set a fixed pixel value for padding
+                    }
+                  },
+                  scales: {
+                    x: {
+                      display: true,
+                      title: {
+                        display: true,
+                        text: 'Time (s) (ionic time norm.)'
+                      },
+                      min: Math.min(...t_values),
+                      max: Math.max(...t_values)
+                    },
+                    y: {
+                      display: true,
+                      title: {
+                        display: true,
+                        text: 'Current (A) (steady state norm.)'
+                      },
+                      min: -.2,
+                      max: 1.2
+                    }
+                  }
+                }
+              };
+              
+              drawGraph(onloop);
+            })
+            .catch(error => console.error('Error:', error));
+          } 
+        else 
+        {
+        // When the toggleTransientCheckbox is not checked, use the steady state function
+        fetch(`/calculate_steady_state?V_G=${value}`)
+          .then(response => {
+              console.log(response)
+              return response.json()
+            })
+          .then(data => {
+            // Assuming data is an array of arrays, as per your Python function's response
+            const V_DS_values = data.map(item => item[0]);
+            const I_DS_values = data.map(item => item[1]);
+
+            config = {
+              type: 'scatter',
+              data: {
+                datasets: [{
+                  label: 'V(G)',
+                  data: V_DS_values.map((value, index) => ({ x: value, y: I_DS_values[index] })),
+                  borderColor: 'rgba(0, 0, 0, 1)',
+                  borderWidth: 2,
+                  pointRadius: 2,
+                  showLine: true,
+                }]
+              },
+              options: {
+                animation: {
+                  duration: 10,
+                },
+                aspectRatio: 1.5,
+                layout: {
+                  padding: {
+                    bottom: 50 // Set a fixed pixel value for padding
+                  }
+                },
+                scales: {
+                  x: {
+                    display: true,
+                    title: {
+                      display: true,
+                      text: 'Voltage drain (V)',
+                    },
+                    min: Math.min(...V_DS_values),
+                    max: Math.max(...V_DS_values),
+                    ticks: {
+                      min: Math.min(...V_DS_values),
+                      max: Math.max(...V_DS_values),
+                      callback: function(value, index, values) {
+                        return value.toExponential(2);
+                      },
+                    }
+                  },
+                  y: {
+                    display: true,
+                    position: 'left',
+                    title: {
+                      display: true,
+                      text: 'Current drain (A)',
+                    },
+                    min: 3e-5,
+                    max: -1e-5,
+                    ticks: {
+                      callback: function(value, index, values) {
+                        return value.toExponential(2);
+                      }
+                    }
+                  }
+                }
+              }
+            };
+          
+            drawGraph(onloop);
+            chart.data.datasets[0].data = V_DS_values.map((value, index) => ({ x: value, y: I_DS_values[index] }));
+          })
+          .catch(error => console.error('Error:', error));
+        }
+      }
+
+      // Call the updated function when the slider value changes
+      valueSlider.addEventListener('change', eventlistener);
+
+      // Make an eventlistener function for the valueSlider
+      function eventlistener() {
+        // pass an onloop value such that no additional resets are done
+        fetchAndDrawPyfunc(parseFloat(event.target.value), 1);
+        // if the variable config exists
+        console.log('There is an event listener here!')
+      }
+
+    </script>
+
+    <!-- Script to control the animation of the graph -->
+    <script>
+      const animationDuration = 2000; // in milliseconds
+      const dotRadius = 5;
+      let animationStartTime;
+      let pointToShow = 0;
+
+      
+      function animatePoints() {
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - animationStartTime;
+        const progress = Math.min(elapsedTime / animationDuration, 1);
+
+        const dataset = config.data.datasets[0];
+        pointToShow = Math.ceil(progress * dataset.data.length);
+
+        dataset.pointRadius = dataset.data.map((value, index) =>
+          index < pointToShow ? dotRadius : 0 // Adjust the radius as needed
+        );
+
+        chart.update('none'); // Update the chart without reanimating
+
+        if (progress < 1) {
+          requestAnimationFrame(animatePoints);
+          // console.log("animating " + pointToShow)
+        } else {
+          resetChart();
+        }
+      }
+
+      const resetChart = () => {
+        // Do after 1 second timeout
+        setTimeout(() => {
+          // Reset the animation when it's done
+          if (config) {
+            // if not "chart.killme" exists
+            if (!chart.killme) {
+              pointToShow = 0;
+              playChart()
+              console.log("reset")
+              console.log(animationStartTime)
+            }
+            else{
+              chart.destroy()
+            }
+          }
+        }, 1);
+      }
+
+      const playChart = () => {
+        animationStartTime = Date.now();
+        animatePoints(config);
+      };
+
+      const pauseChart = () => {
+        pointToShow = chart.data.datasets[0].data.length;
+        chart.update('none');
+      };
+    </script>
+
+    <!-- Script to register the targetFound and targetLost events -->
+    <script>
+      AFRAME.registerComponent('oect', {
+        init: function () {
+          // Add event listener for targetFound event
+          this.el.addEventListener('targetFound', event => {
+            console.log("target found");
+
+            // Draw graphs
+            fetchAndDrawPyfunc();
+            // Toggle slider visibility
+            valueSlider.classList.remove('hidden');
+            canvas.classList.remove('hidden');
+
+          });
+
+          // Add event listener for targetLost event
+          this.el.addEventListener('targetLost', event => {
+            console.log("target lost");
+
+            // Toggle slider visibility
+            valueSlider.classList.add('hidden');
+            canvas.classList.add('hidden');
+          });
+        }
+      });
+    </script>
+
+    </body>
+  </html>
