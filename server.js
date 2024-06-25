@@ -1,22 +1,32 @@
-//Load HTTP module
-const http = require("http");
-const hostname = "localhost";
-const port = 1234;
+var express = require('express')
+var http = require('http')
+var path = require('path')
+var reload = require('reload')
+var bodyParser = require('body-parser')
+var logger = require('morgan')
 
-//Create HTTP server and listen on port 3000 for requests
-var fs = require('fs');
-fs.readFile('./index_testing.html', function (err, html) {
+var app = express()
 
-    if (err) throw err;    
+var publicDir = path.join(__dirname, 'public')
 
-    http.createServer(function(request, response) {  
-        response.writeHeader(200, {"Content-Type": "text/html"});  
-        response.write(html);  
-        response.end();  
-    }).listen(port,hostname);
-});
+app.set('port', process.env.PORT || 4000)
+app.use(logger('dev'))
+app.use(bodyParser.json()) // Parses json, multi-part (file), url-encoded
 
-//listen for request on port 3000, and as a callback function have the port listened on logged
-// server.listen(port, hostname, () => {
-//   console.log(`Server running at http://${hostname}:${port}/`);
-// });
+app.get('/', function (req, res) {
+  res.sendFile(path.join(publicDir, 'index.html'))
+})
+
+var server = http.createServer(app)
+
+// Reload code here
+reload(app).then(function (reloadReturned) {
+  // reloadReturned is documented in the returns API in the README
+
+  // Reload started, start web server
+  server.listen(app.get('port'), function () {
+    console.log('Web server listening on port ' + app.get('port'))
+  })
+}).catch(function (err) {
+  console.error('Reload could not start, could not start server/sample app', err)
+})

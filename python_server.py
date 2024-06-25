@@ -80,6 +80,6 @@ def send_file(filename):
 # ... add other routes and function definitions as needed ...
 
 if __name__ == '__main__':
-    app.run(ssl_context='adhoc')
+    # app.run(ssl_context='adhoc')
     app.run(host='192.168.1.227', port=80)
     # app.run(host='127.0.0.1:5000', port=5000)
