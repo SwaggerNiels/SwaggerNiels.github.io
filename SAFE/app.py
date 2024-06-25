@@ -13,4 +13,4 @@ flask_cors.CORS(app)
 def index():
     return render_template('chart.html')
 
-app.run(host='192.168.1.227', port=80)
+app.run()
