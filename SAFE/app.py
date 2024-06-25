@@ -13,4 +13,8 @@ app = Flask(__name__,
 def index():
     return render_template('chart.html')
 
+<<<<<<< HEAD
 # app.run(host='192.168.1.227', port=80)
+=======
+app.run()
+>>>>>>> 0dfcb7d06dd6c0f02cb9717d78ffb7cd2fe252eb
