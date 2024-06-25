@@ -18,7 +18,6 @@ wg,plots = oect.fp_plots(widget)
 class transient_equation():
     eq = plots[2]
 
-
 app = Flask(__name__,
             static_url_path='', 
             static_folder='./assets',
@@ -43,7 +42,7 @@ def calculate_steady_state():
 @app.route('/calculate_transient', methods=['GET'])
 def calculate_transient():
     f = request.args.get('f', default=0, type=float)
-    V_DS = request.args.get('V_DS', default=0, type=float)
+    V = request.args.get('V', default=0, type=float)
     eq = transient_equation().eq
 
     t_values = np.linspace(0, 60, 100)
@@ -51,7 +50,7 @@ def calculate_transient():
     eq = eq.subs(Symbol('t1'), 40)
     eq = eq.subs(Symbol('V_G_magnitude'), 0.5)
     eq = eq.subs(Symbol('f'), f)
-    eq = eq.subs(Symbol('V_DS'), V_DS)
+    eq = eq.subs(Symbol('V_DS'), V)
     pyfunc_values = [float(eq.subs(Symbol('t'), t)) for t in t_values]
 
     return jsonify([list(i) for i in zip(t_values,pyfunc_values)])
@@ -74,6 +73,5 @@ def send_file(filename):
 # ... add other routes and function definitions as needed ...
 
 if __name__ == '__main__':
-    # app.run(ssl_context='adhoc')
-    app.run(host='192.168.1.227', port=80)
-    # app.run(host='127.0.0.1:5000', port=5000)
+    # app.run(host='192.168.1.227', port=80)
+    app.run(debug=True)

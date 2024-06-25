@@ -25,18 +25,26 @@
       // Always tick on zero
       Chart.defaults.scale.ticks.beginAtZero = true;
       
-      const sliderValueLabel = 'gate:';
+      let sliderLabelText = 'gate:';
+      let sliderLabelText2 = 'Drain:';
+
+      //Set "aspectRatio" variable from the device screen width and height
+      const deviceAspectRatio = window.innerWidth / window.innerHeight;
+      console.log('Device Aspect Ratio:', deviceAspectRatio);
+      
+      
+      let globalTimescale = 1;
     </script>
   </head>
   <body>
     
     <!-- Buttons to start, pause, unpause, stop the AR -->
     <div id="arButtons" style="position: absolute; z-index: 10000;">
-      <button id="start-button">Start</button>
-      <button id="pause-button">Pause</button>
-      <button id="pause-keep-video-button">Pause (keep video)</button>
-      <button id="unpause-button">UnPause</button>
-      <button id="stop-button">Stop</button>
+      <button id="start-button" class="hidden">Start</button>
+      <button id="pause-button" class="hidden">Pause</button>
+      <button id="pause-keep-video-button">Freeze</button>
+      <button id="unpause-button">Unfreeze</button>
+      <button id="stop-button" class="hidden">Stop</button>
     </div>
 
     <!-- Script to start and stop AR -->
@@ -87,21 +95,71 @@
 
     <!-- Style the toggle button in the top right corner of the screen -->
     <style>
+      #arButtons {
+        position: absolute;
+        top: 2%;
+        right: 2%;
+        z-index: 10000;
+      }
+
+      /* Make the freeze button bigger */
+      #pause-keep-video-button {
+        font-size: 20px;
+      }
+      /* Make the unfreeze button bigger */
+      #unpause-button {
+        font-size: 20px;
+      }
+      
       #toggleTransient {
         position: absolute;
-        bottom: 30%;
+        bottom: 6%;
         left: 2%;
+        font-size: 14px;
         z-index: 10000;
       }
     </style>
 
+    <!-- Add eventlistener for toggle change that calls the updates the graph -->
+    <script>
+      const toggleTransientCheckbox = document.getElementById('toggleTransientCheckbox');
+      toggleTransientCheckbox.addEventListener('change', (event) => {
+        // get the value from the valueSlider here
+        if (!toggleTransientCheckbox.checked) {
+          valueSlider.value = 0.5;
+          valueSlider.min = 0;
+          valueSlider.max = 1;
+
+          const value = valueSlider.value
+          fetchAndDrawPyfunc(parseFloat(value), 1);
+        } else {
+          valueSlider.value = 0.5;
+          valueSlider.min = 0;
+          valueSlider.max = 0.5;
+
+          valueSlider2.value = 0.5;
+          valueSlider2.min = 0;
+          valueSlider2.max = 1;
+
+          //update the graph using both slider values
+          const value = valueSlider.value
+          const value2 = valueSlider2.value
+          fetchAndDrawPyfunc(parseFloat(value), parseFloat(value2), 1);
+        }
+      });
+    </script>
+
     <!-- Slider and graph canvas HTML elements -->
     <input type="range" id="valueSlider" min="0" max="1" step="0.1" value="0" class="hidden" z-index="10000">
-    <p id="sliderValue">text</p>
+    <p id="sliderLabel">text</p>
+    <input type="range" id="valueSlider2" min="0" max="1" step="0.1" value="0" class="hidden" z-index="10000">
+    <p id="sliderLabel2" class="hidden">text</p>
     <canvas id="pyfuncCanvas"></canvas>
     <script>
-      var sliderValueElement = document.getElementById('sliderValue');
-      sliderValueElement.textContent = sliderValueLabel + '0';
+      var sliderLabelElement = document.getElementById('sliderLabel');
+      sliderLabelElement.textContent = sliderLabelText + '0';
+      var sliderLabelElement2 = document.getElementById('sliderLabel2');
+      sliderLabelElement.textContent = sliderLabelText2 + '0';
     </script>
 
     <!-- Styles for the graph canvas and slider -->
@@ -118,7 +176,7 @@
         border: 1px solid rgba(255, 255, 255, 1);
       }
       
-      #sliderValue {
+      #sliderLabel {
         position: absolute; 
         bottom: 2px; 
         height: 3%;
@@ -225,23 +283,31 @@
 
     <!-- Buttons to control the animation, CSS and HTML elements-->
     <style>
-      #pauseButton {
+      #gltfAnimationButtons {
         position: absolute;
-        top: 50px;
-        left: 10px;
+        top: 2%;
+        left: 2%;
+        z-index: 10000;
+      }
+      #pauseButton {
+        /* position: absolute; */
         z-index: 1001;
+        font-size: 20px;
       }
       #playButton {
-        position: absolute;
-        top: 50px;
-        left: 60px;
+        /* position: absolute; */
         z-index: 1001;
+        font-size: 20px;
       }
     </style>
-    <button id="playButton" z-index="1000">Play</button>
-    <button id="pauseButton" z-index="1000">Pause</button>
 
-    <!-- Script to control the animations -->
+    <!-- Buttons to control the animations -->
+    <div id="gltfAnimationButtons" class="hidden" style="position: absolute; z-index: 10000;">
+      <button id="playButton" z-index="1000">Play</button>
+      <button id="pauseButton" z-index="1000">Pause</button>
+    </div>
+
+    <!-- Script to control the gltf animations -->
     <script>
       // Wait for the A-Frame scene to load
       document.addEventListener("DOMContentLoaded", function () {
@@ -253,7 +319,7 @@
           }
 
           function pause() {
-            target.childNodes[1].setAttribute("animation-mixer", "timeScale:0") 
+            target.childNodes[1].setAttribute("animation-mixer", "timeScale:0")
             console.log('pressed pause')
           }
 
@@ -265,14 +331,10 @@
 
     <!-- Script to draw and update the graph based on the slider -->
     <script>
+      const sliderLabel = document.getElementById('sliderLabel');
       const valueSlider = document.getElementById('valueSlider');
       let chart;
       var config;
-
-      valueSlider.oninput = function() {
-        const formattedValue = parseFloat(valueSlider.value).toFixed(2);
-        sliderValueElement.textContent = sliderValueLabel + (formattedValue >= 0 ? ' ' : '') + formattedValue + 'V';
-      };
 
       function drawGraph(onloop) {
         // Draw the graph
@@ -287,16 +349,40 @@
         if (!onloop) {
           resetChart();
         }
+
+        // Update the slider label
+        if (toggleTransientCheckbox.checked) {
+          // sliderLabelElement2.classList.remove('hidden');
+          const formattedValue = parseFloat(valueSlider.value).toFixed(2);
+          const formattedValue2 = parseFloat(valueSlider2.value).toFixed(2);
+          sliderLabelText = 'f:'
+          sliderLabelText2 = 'Drain:'
+          sliderLabelElement.textContent = sliderLabelText + (formattedValue >= 0 ? ' ' : '') + formattedValue;
+          sliderLabelElement2.textContent = sliderLabelText2 + (formattedValue2 >= 0 ? ' ' : '') + formattedValue2 + 'V';
+        } else {
+          const formattedValue = parseFloat(valueSlider.value).toFixed(2);
+          sliderLabelText = 'Gate:'
+          sliderLabelElement.textContent = sliderLabelText + (formattedValue >= 0 ? ' ' : '') + formattedValue + 'V';
+          sliderLabelElement2.classList.add('hidden');
+        }
       }
 
       const canvas = document.getElementById('pyfuncCanvas');
       const ctx = canvas.getContext('2d');
 
-      function fetchAndDrawPyfunc(value, onloop) {
+      // Fetch the data from the Python function
+      function fetchAndDrawPyfunc(parameter, onloop) {
+        if (!Array.isArray(parameter)) {
+          parameter = [parameter, 0];
+        }
+        console.log(parameter);
+
+        const graphAspectRatio = deviceAspectRatio / 0.3;
+
         // When the toggleTransientCheckbox is checked, use the transient function
         if (document.getElementById('toggleTransientCheckbox').checked) {
           console.log('fetching transient');
-          fetch(`/calculate_transient?f=${value}&V_DS=0.1`)
+          fetch(`/calculate_transient?f=${parameter[0]}&V=0.1`)//${parameter[1]}`)
             .then(response => {
               console.log("what is f?")
               console.log(response)
@@ -313,11 +399,13 @@
                 type: 'scatter',
                 data: {
                   datasets: [{
-                    label: 'I(f)',
                     data: t_values.map((value, index) => ({ x: value, y: I_values[index] })),
                     borderColor: 'rgba(0, 0, 0, 1)',
                     borderWidth: 2,
                     pointRadius: 2,
+                    //update the point color to blue
+                    pointBackgroundColor: 'black',
+                    pointBorderColor: 'blue',
                     showLine: true,
                   }]
                 },
@@ -325,18 +413,23 @@
                   animation: {
                     duration: 10,
                   },
-                  aspectRatio: 1.5,
+                  aspectRatio: graphAspectRatio,
                   layout: {
                     padding: {
                       bottom: 50 // Set a fixed pixel value for padding
                     }
+                  },
+                  plugins: {
+                    legend: {
+                      display: false
+                    },
                   },
                   scales: {
                     x: {
                       display: true,
                       title: {
                         display: true,
-                        text: 'Time (s) (ionic time norm.)'
+                        text: 'Time (s) (norm.)'
                       },
                       min: Math.min(...t_values),
                       max: Math.max(...t_values)
@@ -345,7 +438,7 @@
                       display: true,
                       title: {
                         display: true,
-                        text: 'Current (A) (steady state norm.)'
+                        text: 'Current (A) (norm.)'
                       },
                       min: -.2,
                       max: 1.2
@@ -361,7 +454,7 @@
         else 
         {
         // When the toggleTransientCheckbox is not checked, use the steady state function
-        fetch(`/calculate_steady_state?V_G=${value}`)
+        fetch(`/calculate_steady_state?V_G=${parameter[0]}`)
           .then(response => {
               console.log(response)
               return response.json()
@@ -375,11 +468,13 @@
               type: 'scatter',
               data: {
                 datasets: [{
-                  label: 'V(G)',
                   data: V_DS_values.map((value, index) => ({ x: value, y: I_DS_values[index] })),
                   borderColor: 'rgba(0, 0, 0, 1)',
                   borderWidth: 2,
                   pointRadius: 2,
+                  //update the point color to blue
+                  pointBackgroundColor: 'black',
+                  pointBorderColor: 'orange',
                   showLine: true,
                 }]
               },
@@ -387,11 +482,16 @@
                 animation: {
                   duration: 10,
                 },
-                aspectRatio: 1.5,
+                aspectRatio: graphAspectRatio,
                 layout: {
                   padding: {
                     bottom: 50 // Set a fixed pixel value for padding
                   }
+                },
+                plugins: {
+                  legend: {
+                    display: false
+                  },
                 },
                 scales: {
                   x: {
@@ -437,22 +537,29 @@
       }
 
       // Call the updated function when the slider value changes
-      valueSlider.addEventListener('change', eventlistener);
+      valueSlider.addEventListener('input', eventlistener);
+      valueSlider2.addEventListener('input', eventlistener2);
 
       // Make an eventlistener function for the valueSlider
       function eventlistener() {
         // pass an onloop value such that no additional resets are done
-        fetchAndDrawPyfunc(parseFloat(event.target.value), 1);
+        fetchAndDrawPyfunc([parseFloat(event.target.value), parseFloat(valueSlider2.value)], 1);
         // if the variable config exists
         console.log('There is an event listener here!')
+      }
+      function eventlistener2() {
+        // pass an onloop value such that no additional resets are done
+        fetchAndDrawPyfunc([parseFloat(valueSlider.value), parseFloat(event.target.value)], 1);
+        // if the variable config exists
+        console.log('There is an second event listener here!')
       }
 
     </script>
 
     <!-- Script to control the animation of the graph -->
     <script>
-      const animationDuration = 2000; // in milliseconds
-      const dotRadius = 5;
+      const animationDuration = 2430; // in milliseconds
+      const dotRadius = 3;
       let animationStartTime;
       let pointToShow = 0;
 
@@ -495,6 +602,9 @@
               chart.destroy()
             }
           }
+          const ar_model = document.querySelector('a-entity[mindar-image-target]').childNodes[1]
+          ar_model.removeAttribute("animation-mixer");
+          ar_model.setAttribute("animation-mixer", {timeScale: globalTimescale});
         }, 1);
       }
 
