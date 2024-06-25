@@ -1,0 +1,75 @@
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <canvas id="myChart"></canvas>
+    <script>
+      const data = {
+        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+        datasets: [{
+          label: 'Looping tension',
+          data: [65, 59, 80, 81, 26, 55, 40],
+          fill: false,
+          borderColor: 'rgb(75, 192, 192)',
+        }]
+      };
+
+      const config = {
+        type: 'line',
+        data: data,
+        scales: {
+          y: { // defining min and max so hiding the dataset does not change scale range
+            min: 0,
+            max: 100
+          }
+        }
+      };
+
+      
+      const ctx = document.getElementById('myChart').getContext('2d');
+      const myChart = new Chart(ctx, config);
+
+      const animationDuration = 1000; // in milliseconds
+      let animationStartTime;
+      let pointToShow = 0;
+
+      function animatePoints() {
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - animationStartTime;
+        const progress = Math.min(elapsedTime / animationDuration, 1);
+
+        const dataset = config.data.datasets[0];
+        pointToShow = Math.ceil(progress * dataset.data.length);
+
+        dataset.pointRadius = dataset.data.map((value, index) =>
+          index < pointToShow ? 20 : 0 // Adjust the radius as needed
+        );
+
+        myChart.update('none'); // Update the chart without reanimating
+
+        if (progress < 1) {
+          requestAnimationFrame(animatePoints);
+        } else {
+          // Reset the animation when it's done
+          pointToShow = 0;
+          myChart.reset();
+          play()
+        }
+      }
+
+      const play = () => {
+        animationStartTime = Date.now();
+        animatePoints();
+      };
+
+      const pause = () => {
+        pointToShow = myChart.data.datasets[0].data.length;
+        myChart.update('none');
+      };
+
+      play()
+
+    </script>
+  </body>
+</html>
