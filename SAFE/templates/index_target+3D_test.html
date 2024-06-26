@@ -122,28 +122,34 @@
 
     <!-- Add eventlistener for toggle change that calls the updates the graph -->
     <script>
-      const toggleTransientCheckbox = document.getElementById('toggleTransientCheckbox');
-      toggleTransientCheckbox.addEventListener('change', (event) => {
+      // const toggleTransientCheckbox = document.getElementById('toggleTransientCheckbox');
+      // const ar_model = document.querySelector('a-entity[mindar-image-target]').childNodes[1]
+      // ar_model.removeAttribute("animation-mixer");
+        toggleTransientCheckbox.addEventListener('change', (event) => {
         // get the value from the valueSlider here
         if (!toggleTransientCheckbox.checked) {
+          //Steady state
           valueSlider.value = 0.5;
           valueSlider.min = 0;
           valueSlider.max = 1;
 
           const value = valueSlider.value
+          // ar_model.setAttribute("animation-mixer", {timeScale: 1, clip : "tr*"});
           fetchAndDrawPyfunc(parseFloat(value), 1);
         } else {
+          //Transient
           valueSlider.value = 0.5;
           valueSlider.min = 0;
           valueSlider.max = 0.5;
-
+          
           valueSlider2.value = 0.5;
           valueSlider2.min = 0;
           valueSlider2.max = 1;
-
+          
           //update the graph using both slider values
           const value = valueSlider.value
           const value2 = valueSlider2.value
+          // ar_model.setAttribute("animation-mixer", {timeScale: 1, clip : "ss_hole*"});
           fetchAndDrawPyfunc(parseFloat(value), parseFloat(value2), 1);
         }
       });
@@ -244,7 +250,7 @@
 	    <a-light id="dirlight" intensity="1" light="castShadow:true;type:directional" position="1 1 1"></a-light>
       
       <a-assets>
-        <a-asset-item id="avatarModel" src="./assets/OECT.gltf"></a-asset-item>
+        <a-asset-item id="gltf" src="./assets/OECT.gltf"></a-asset-item>
       </a-assets>
       
       <a-entity light="type: ambient; color: #CCC"></a-entity>
@@ -254,12 +260,15 @@
       <!-- Make sure to set the gltf object alpha blend on if you want transparency -->
       <a-entity mouse-rotation="rotationFactor: 5" gesture-rotation="rotationFactor: 2">
         <a-entity id="oect" oect mindar-image-target="targetIndex: 0" gesture-handler>
-            <a-gltf-model rotation="0 0 0 " position="0 0 0" scale="0.4 0.4 0.4" src="#avatarModel" 
-            animation-mixer="timeScale:0" 
+            <a-gltf-model rotation="0 0 0 " position="0 0 0" scale="0.4 0.4 0.4" src="#gltf" 
+            animation-mixer="timeScale=0, clip=tr_*"
             gltf-name-tag
             gesture-handler>
-        </a-entity>
+          </a-entity>
       </a-entity>
+      
+      <!-- <a-entity mouse-rotation="rotationFactor: 5" gesture-rotation="rotationFactor: 2">
+      </a-entity> -->
 
     </a-scene>
 
@@ -281,7 +290,7 @@
       });
     </script> -->
 
-    <!-- Buttons to control the animation, CSS and HTML elements-->
+    <!-- Style of buttons for gltf animation, CSS and HTML elements-->
     <style>
       #gltfAnimationButtons {
         position: absolute;
@@ -578,6 +587,24 @@
 
         chart.update('none'); // Update the chart without reanimating
 
+
+        if (document.getElementById('toggleTransientCheckbox').checked) {
+          // Transient
+        }
+        else {
+          // Steady state
+          // change speed of ions
+          const ar_model = document.querySelector('a-entity[mindar-image-target]').childNodes[1]
+          const animation_mixer = ar_model.components["animation-mixer"]
+          // get slider value
+          const slid = document.getElementById('valueSlider').value
+          const frame = (1-slid/2)*Math.E ** Math.abs((progress-0.5)*3)
+          animation_mixer.mixer.setTime(frame)
+          // console.log('set speed' + progress)
+          // ar_model.removeAttribute("animation-mixer");
+          // ar_model.setAttribute("animation-mixer", {timeScale: 1, clip : "ss_hole*"});
+        }
+
         if (progress < 1) {
           requestAnimationFrame(animatePoints);
           // console.log("animating " + pointToShow)
@@ -587,25 +614,30 @@
       }
 
       const resetChart = () => {
-        // Do after 1 second timeout
-        setTimeout(() => {
-          // Reset the animation when it's done
-          if (config) {
-            // if not "chart.killme" exists
-            if (!chart.killme) {
-              pointToShow = 0;
-              playChart()
-              console.log("reset")
-              console.log(animationStartTime)
-            }
-            else{
-              chart.destroy()
-            }
+        // Reset the animation when it's done
+        if (config) {
+          // if not "chart.killme" exists
+          if (!chart.killme) {
+            pointToShow = 0;
+            playChart()
+            console.log("reset")
+            console.log(animationStartTime)
           }
-          const ar_model = document.querySelector('a-entity[mindar-image-target]').childNodes[1]
-          ar_model.removeAttribute("animation-mixer");
-          ar_model.setAttribute("animation-mixer", {timeScale: globalTimescale});
-        }, 1);
+          else{
+            chart.destroy()
+          }
+        }
+        const ar_model = document.querySelector('a-entity[mindar-image-target]').childNodes[1]
+        ar_model.removeAttribute("animation-mixer");
+        //check whether transientToggle is checked
+        if (document.getElementById('toggleTransientCheckbox').checked) {
+          // Transient
+          ar_model.setAttribute("animation-mixer", {timeScale: 1, clip : "tr*"});
+        }
+        else {
+          // Steady state
+          ar_model.setAttribute("animation-mixer", {timeScale: 1, clip : "ss_hole*"});
+        }
       }
 
       const playChart = () => {
