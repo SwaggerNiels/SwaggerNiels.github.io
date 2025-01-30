@@ -1,0 +1,3 @@
+To render use nbviewer
+see link:
+https://nbviewer.org/github/SwaggerNiels/SwaggerNiels.github.io/blob/main/Manuals/PrusaSlicer%20first%20print%20shortpage.pdf
