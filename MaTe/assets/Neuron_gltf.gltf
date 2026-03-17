@@ -8,7 +8,8 @@
 		{
 			"name":"Scene",
 			"nodes":[
-				0
+				0,
+				1
 			]
 		}
 	],
@@ -32,6 +33,21 @@
 				0.0014429092407226562,
 				2.703794002532959
 			]
+		},
+		{
+			"mesh":1,
+			"name":"Neuron_text",
+			"rotation":[
+				0.6028833389282227,
+				0.3695019483566284,
+				-0.3695019781589508,
+				0.6028833389282227
+			],
+			"translation":[
+				-0.600864589214325,
+				1.274574637413025,
+				1.1796468496322632
+			]
 		}
 	],
 	"materials":[
@@ -44,8 +60,9 @@
 					1,
 					0.2133370339870453,
 					0.35966405272483826,
-					0.35999995470046997
-				]
+					0.2799999713897705
+				],
+				"metallicFactor":0
 			}
 		},
 		{
@@ -53,12 +70,12 @@
 			"name":"Neuron_nucleus",
 			"pbrMetallicRoughness":{
 				"baseColorFactor":[
-					0.0025112645234912634,
-					0.004839735571295023,
-					0.13644488155841827,
+					0.005579054355621338,
+					0.013722142204642296,
+					0.6543581485748291,
 					1
 				],
-				"metallicFactor":0.7039999961853027
+				"metallicFactor":0.08799999952316284
 			}
 		},
 		{
@@ -71,6 +88,18 @@
 					1
 				],
 				"metallicFactor":0
+			}
+		},
+		{
+			"doubleSided":true,
+			"name":"Black",
+			"pbrMetallicRoughness":{
+				"baseColorFactor":[
+					0,
+					0,
+					0,
+					1
+				]
 			}
 		}
 	],
@@ -101,6 +130,20 @@
 					},
 					"indices":8,
 					"material":2
+				}
+			]
+		},
+		{
+			"name":"Text.005",
+			"primitives":[
+				{
+					"attributes":{
+						"POSITION":9,
+						"NORMAL":10,
+						"TEXCOORD_0":11
+					},
+					"indices":12,
+					"material":3
 				}
 			]
 		}
@@ -189,6 +232,40 @@
 			"componentType":5123,
 			"count":10518,
 			"type":"SCALAR"
+		},
+		{
+			"bufferView":9,
+			"componentType":5126,
+			"count":2238,
+			"max":[
+				3.147000312805176,
+				0,
+				0.009000000543892384
+			],
+			"min":[
+				0.07400000095367432,
+				-0.07357995957136154,
+				-0.6820000410079956
+			],
+			"type":"VEC3"
+		},
+		{
+			"bufferView":10,
+			"componentType":5126,
+			"count":2238,
+			"type":"VEC3"
+		},
+		{
+			"bufferView":11,
+			"componentType":5126,
+			"count":2238,
+			"type":"VEC2"
+		},
+		{
+			"bufferView":12,
+			"componentType":5123,
+			"count":4428,
+			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
@@ -245,11 +322,35 @@
 			"byteLength":21036,
 			"byteOffset":526332,
 			"target":34963
+		},
+		{
+			"buffer":0,
+			"byteLength":26856,
+			"byteOffset":547368,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":26856,
+			"byteOffset":574224,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":17904,
+			"byteOffset":601080,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":8856,
+			"byteOffset":618984,
+			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":547368,
+			"byteLength":627840,
 			"uri":"Neuron_gltf.bin"
 		}
 	]

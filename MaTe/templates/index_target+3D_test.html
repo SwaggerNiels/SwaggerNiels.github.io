@@ -9,6 +9,11 @@
   </head>
   <body>
     
+    <!-- Instructive text -->
+    <div style="position: absolute; top: 2%; left: 2%; z-index: 10000; color: white; font-size: clamp(18px, 3.75vw, 36px); font-family: sans-serif; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+      Tap to select object, then rotate and zoom
+    </div>
+
     <!-- Buttons to freeze/unfreeze the AR -->
     <div id="arButtons" style="position: absolute; z-index: 10000;">
       <button id="pause-keep-video-button">Freeze</button>
@@ -37,15 +42,17 @@
     <style>
       #arButtons {
         position: absolute;
-        top: 2%;
-        right: 2%;
+        bottom: 2%;
+        left: 0;
+        right: 0;
         z-index: 10000;
+        display: flex;
+        justify-content: stretch;
       }
 
-      #pause-keep-video-button {
-        font-size: 20px;
-      }
+      #pause-keep-video-button,
       #unpause-button {
+        flex: 1;
         font-size: 20px;
       }
     </style>
@@ -83,7 +90,7 @@
     <!-- MindAR HTML document -->
     <!-- mouse-detector -->
     <a-scene 
-      mindar-image="imageTargetSrc: ./assets/vOECT_target.mind; filterMinCF:.01; filterBeta: 1; warmupTolerance: 5; missTolerance: 30; maxTrack: 4"
+      mindar-image="imageTargetSrc: ./assets/vOECT_target.mind; filterMinCF:.00001; filterBeta: .01; warmupTolerance: 5; missTolerance: 30; maxTrack: 4"
       color-space="sRGB"
       renderer="colorManagement: true, physicallyCorrectLights: true, sortObjects: true, premultipliedAlpha: true, logarithmicDepthBuffer="true"
       vr-mode-ui="enabled: false" 
@@ -110,7 +117,7 @@
       
       <a-entity light="type: ambient; color: #CCC"></a-entity>
       
-      <a-camera position="0 0 0" look-controls="enabled: false">
+      <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="far: 10000; objects: .clickable">
         <!-- Preview model shown in front of camera before target is found -->
         <a-gltf-model id="preview-model" position="0 0 -5" rotation="20 -45 -20" scale="0.5 0.5 0.5" src="#vOECT_gltf"
           animation-mixer="timeScale=0, clip=tr_*"
@@ -122,7 +129,7 @@
       <!-- Make sure to set the gltf object alpha blend on if you want transparency -->
       <a-entity>
         <a-entity id="oect" oect mindar-image-target="targetIndex: 0">
-            <a-gltf-model rotation="20 -45 -20" position="0.35 0 0" scale="0.12 0.12 0.12" src="#vOECT_gltf" 
+            <a-gltf-model class="clickable" rotation="6 -65 -20" position="0.35 0 0" scale="0.12 0.12 0.12" src="#vOECT_gltf" 
             animation-mixer="timeScale=0, clip=tr_*"
             gltf-name-tag
             gesture-handler>
@@ -131,7 +138,7 @@
 
       <a-entity>
         <a-entity id="oect2" oect2 mindar-image-target="targetIndex: 1">
-            <a-gltf-model rotation="20 -45 -20" position="-0.4 -0.2 0" scale="0.1 0.1 0.1" src="#OECT_gltf" 
+            <a-gltf-model class="clickable" rotation="-5 -100 -20" position="-0.4 -0.2 0" scale="0.1 0.1 0.1" src="#OECT_gltf" 
             animation-mixer="timeScale=0, clip=tr_*"
             gltf-name-tag
             gesture-handler>
@@ -140,7 +147,7 @@
 
       <a-entity>
         <a-entity id="oect3" oect3 mindar-image-target="targetIndex: 2">
-            <a-gltf-model rotation="20 -45 -20" position="-0.2 .3 0" scale="0.1 0.1 0.1" src="#Neuron_gltf" 
+            <a-gltf-model class="clickable" rotation="10 -70 -20" position="-0.2 .3 0" scale="0.1 0.1 0.1" src="#Neuron_gltf" 
             animation-mixer="timeScale=0, clip=tr_*"
             gltf-name-tag
             gesture-handler>
@@ -149,7 +156,7 @@
 
       <a-entity>
         <a-entity id="oect4" oect4 mindar-image-target="targetIndex: 3">
-            <a-gltf-model rotation="20 -45 -20" position="0.35 -.55 0" scale="0.05 0.05 0.05" src="#Wellplate_gltf" 
+            <a-gltf-model class="clickable" rotation="6 -95 10" position="0.35 -.55 0" scale="0.05 0.05 0.05" src="#Wellplate_gltf" 
             animation-mixer="timeScale=0, clip=tr_*"
             gltf-name-tag
             gesture-handler>
@@ -160,11 +167,11 @@
     </a-scene>
 
     <!-- Script to handle touch gestures (Hammer.js) for pinch-scale, pan-rotation, and swipe momentum -->
-    <!-- Uses a shared Hammer instance so all gesture-handler elements rotate/scale together -->
+    <!-- Click/tap an object to select it; gestures only apply to the selected object -->
     <script>
       (function () {
-        // Shared state across all gesture-handler instances
         var instances = [];
+        var selectedInst = null;
         var isPanning = false;
         var swipeVelocity = 0;
         var hammerInitialized = false;
@@ -175,40 +182,57 @@
 
           var hammertime = new Hammer(document.body);
           hammertime.get('pinch').set({ enable: true });
+          hammertime.get('rotate').set({ enable: true });
 
-          // Pinch to scale all instances
-          var savedScaleFactors = [];
+          // Pinch to scale selected instance
+          var savedScaleFactor = 1;
           hammertime.on('pinchstart', function () {
-            savedScaleFactors = instances.map(function (inst) { return inst.scaleFactor; });
+            if (selectedInst) savedScaleFactor = selectedInst.scaleFactor;
           });
           hammertime.on('pinchmove', function (ev) {
-            instances.forEach(function (inst, i) {
-              var startFactor = savedScaleFactors[i] || inst.scaleFactor;
-              inst.scaleFactor = Math.min(Math.max(ev.scale * startFactor, inst.data.minScale), inst.data.maxScale);
-              inst.el.object3D.scale.set(
-                inst.scaleFactor * inst.initialScale.x,
-                inst.scaleFactor * inst.initialScale.y,
-                inst.scaleFactor * inst.initialScale.z
-              );
-            });
+            if (!selectedInst) return;
+            var inst = selectedInst;
+            inst.scaleFactor = Math.min(Math.max(ev.scale * savedScaleFactor, inst.data.minScale), inst.data.maxScale);
+            inst.el.object3D.scale.set(
+              inst.scaleFactor * inst.initialScale.x,
+              inst.scaleFactor * inst.initialScale.y,
+              inst.scaleFactor * inst.initialScale.z
+            );
           });
 
-          // Pan to rotate all instances
-          hammertime.on('panleft', function () {
-            isPanning = true;
-            instances.forEach(function (inst) { inst.el.object3D.rotation.y -= 4 * Math.PI / 360; });
+          // Rotate using relative rotation (two-finger twist)
+          var previousRot = 0;
+          hammertime.on('rotatestart', function (ev) {
+            previousRot = ev.rotation;
           });
-          hammertime.on('panright', function () {
-            isPanning = true;
-            instances.forEach(function (inst) { inst.el.object3D.rotation.y += 4 * Math.PI / 360; });
+          hammertime.on('rotatemove', function (ev) {
+            if (!selectedInst) return;
+            var newRot = (ev.rotation - previousRot) * Math.PI / 180;
+            selectedInst.el.object3D.rotation.y += newRot;
+            previousRot = ev.rotation;
+            var r = selectedInst.el.object3D.rotation;
+            console.log('Rotation (deg): x=' + (r.x * 180 / Math.PI).toFixed(1) + ' y=' + (r.y * 180 / Math.PI).toFixed(1) + ' z=' + (r.z * 180 / Math.PI).toFixed(1));
           });
-          hammertime.on('panup', function () {
+
+          // Pan to rotate selected instance (single finger)
+          var previousPanX = 0;
+          var previousPanY = 0;
+          hammertime.on('panstart', function (ev) {
             isPanning = true;
-            instances.forEach(function (inst) { inst.el.object3D.rotation.x -= 4 * Math.PI / 360; });
+            previousPanX = ev.deltaX;
+            previousPanY = ev.deltaY;
           });
-          hammertime.on('pandown', function () {
+          hammertime.on('panmove', function (ev) {
+            if (!selectedInst) return;
             isPanning = true;
-            instances.forEach(function (inst) { inst.el.object3D.rotation.x += 4 * Math.PI / 360; });
+            var deltaX = ev.deltaX - previousPanX;
+            var deltaY = ev.deltaY - previousPanY;
+            selectedInst.el.object3D.rotation.y += deltaX * Math.PI / 360;
+            selectedInst.el.object3D.rotation.x += deltaY * Math.PI / 360;
+            var r = selectedInst.el.object3D.rotation;
+            console.log('Rotation (deg): x=' + (r.x * 180 / Math.PI).toFixed(1) + ' y=' + (r.y * 180 / Math.PI).toFixed(1) + ' z=' + (r.z * 180 / Math.PI).toFixed(1));
+            previousPanX = ev.deltaX;
+            previousPanY = ev.deltaY;
           });
           hammertime.on('panend', function () { isPanning = false; });
           hammertime.on('pancancel', function () { isPanning = false; });
@@ -228,21 +252,29 @@
             this.initialScale = this.el.object3D.scale.clone();
             this.scaleFactor = 1;
             instances.push(this);
+            // Auto-select the first instance (preview model)
+            if (instances.length === 1) selectedInst = this;
             initHammer();
+
+            // Click/tap to select this object via A-Frame cursor raycaster
+            var self = this;
+            this.el.addEventListener('click', function () {
+              selectedInst = self;
+              console.log('Selected:', self.el.id || self.el.tagName);
+            });
           },
 
           remove: function () {
             var idx = instances.indexOf(this);
             if (idx !== -1) instances.splice(idx, 1);
+            if (selectedInst === this) selectedInst = instances[0] || null;
           },
 
           tick: function () {
-            // Only the first instance drives the shared swipe momentum to avoid duplicate updates
+            // Only the first instance drives the shared swipe momentum
             if (instances[0] !== this) return;
-            if (!(swipeVelocity && !isPanning)) return;
-            instances.forEach(function (inst) {
-              inst.el.object3D.rotation.y += swipeVelocity * 4 * Math.PI / 360;
-            });
+            if (!(swipeVelocity && !isPanning && selectedInst)) return;
+            selectedInst.el.object3D.rotation.y += swipeVelocity * 4 * Math.PI / 360;
             swipeVelocity *= 0.93;
             if (Math.abs(swipeVelocity) <= 0.1) swipeVelocity = 0;
           }
