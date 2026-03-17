@@ -24,10 +24,12 @@
           arSystem = sceneEl.systems["mindar-image-system"];
         });
         document.querySelector("#pause-keep-video-button").addEventListener('click', () => {
-          arSystem.pause(true); // pause AR, keep video
+          if (arSystem) arSystem.pause(true); // pause AR, keep video
+          sceneEl.pause(); // pause the A-Frame scene (stops gestures, animations, ticks)
         });
         document.querySelector("#unpause-button").addEventListener('click', () => {
-          arSystem.unpause(); // unpause AR and video
+          sceneEl.play(); // resume the A-Frame scene
+          if (arSystem) arSystem.unpause(); // unpause AR and video
         });
       });
     </script>
@@ -81,7 +83,7 @@
     <!-- MindAR HTML document -->
     <!-- mouse-detector -->
     <a-scene 
-      mindar-image="imageTargetSrc: ./assets/vOECT_target.mind; filterMinCF:0.0001; filterBeta: 1; warmupTolerance: 5; missTolerance: 30; maxTrack: 2"
+      mindar-image="imageTargetSrc: ./assets/vOECT_target.mind; filterMinCF:.01; filterBeta: 1; warmupTolerance: 5; missTolerance: 30; maxTrack: 4"
       color-space="sRGB"
       renderer="colorManagement: true, physicallyCorrectLights: true, sortObjects: true, premultipliedAlpha: true, logarithmicDepthBuffer="true"
       vr-mode-ui="enabled: false" 
@@ -98,21 +100,29 @@
         <a-asset-item id="OECT_gltf" src="./assets/OECT_gltf.gltf"></a-asset-item>
       </a-assets>
       
+      <a-assets>
+        <a-asset-item id="Neuron_gltf" src="./assets/Neuron_gltf.gltf"></a-asset-item>
+      </a-assets>
+      
+      <a-assets>
+        <a-asset-item id="Wellplate_gltf" src="./assets/Wellplate_gltf.gltf"></a-asset-item>
+      </a-assets>
+      
       <a-entity light="type: ambient; color: #CCC"></a-entity>
       
       <a-camera position="0 0 0" look-controls="enabled: false">
         <!-- Preview model shown in front of camera before target is found -->
-        <a-gltf-model id="preview-model" position="0 0 -5" rotation="20 -45 -20" scale="0.3 0.3 0.3" src="#vOECT_gltf"
+        <a-gltf-model id="preview-model" position="0 0 -5" rotation="20 -45 -20" scale="0.5 0.5 0.5" src="#vOECT_gltf"
           animation-mixer="timeScale=0, clip=tr_*"
           gltf-name-tag
           gesture-handler>
         </a-gltf-model>
       </a-camera>
-      
+
       <!-- Make sure to set the gltf object alpha blend on if you want transparency -->
       <a-entity>
         <a-entity id="oect" oect mindar-image-target="targetIndex: 0">
-            <a-gltf-model rotation="20 -45 -20" position="0 0 0" scale="0.1 0.1 0.1" src="#vOECT_gltf" 
+            <a-gltf-model rotation="20 -45 -20" position="0.35 0 0" scale="0.12 0.12 0.12" src="#vOECT_gltf" 
             animation-mixer="timeScale=0, clip=tr_*"
             gltf-name-tag
             gesture-handler>
@@ -121,7 +131,25 @@
 
       <a-entity>
         <a-entity id="oect2" oect2 mindar-image-target="targetIndex: 1">
-            <a-gltf-model rotation="20 -45 -20" position="-0.5 0 0" scale="0.1 0.1 0.1" src="#OECT_gltf" 
+            <a-gltf-model rotation="20 -45 -20" position="-0.4 -0.2 0" scale="0.1 0.1 0.1" src="#OECT_gltf" 
+            animation-mixer="timeScale=0, clip=tr_*"
+            gltf-name-tag
+            gesture-handler>
+          </a-entity>
+      </a-entity>
+
+      <a-entity>
+        <a-entity id="oect3" oect3 mindar-image-target="targetIndex: 2">
+            <a-gltf-model rotation="20 -45 -20" position="-0.2 .3 0" scale="0.1 0.1 0.1" src="#Neuron_gltf" 
+            animation-mixer="timeScale=0, clip=tr_*"
+            gltf-name-tag
+            gesture-handler>
+          </a-entity>
+      </a-entity>
+
+      <a-entity>
+        <a-entity id="oect4" oect4 mindar-image-target="targetIndex: 3">
+            <a-gltf-model rotation="20 -45 -20" position="0.35 -.55 0" scale="0.05 0.05 0.05" src="#Wellplate_gltf" 
             animation-mixer="timeScale=0, clip=tr_*"
             gltf-name-tag
             gesture-handler>
@@ -251,6 +279,36 @@
           });
           this.el.addEventListener('targetLost', event => {
             console.log("target 2 lost");
+            preview.object3D.visible = true;
+          });
+        }
+      });
+
+      AFRAME.registerComponent('oect3', {
+        init: function () {
+          const preview = document.getElementById('preview-model');
+
+          this.el.addEventListener('targetFound', event => {
+            console.log("target 3 found");
+            preview.object3D.visible = false;
+          });
+          this.el.addEventListener('targetLost', event => {
+            console.log("target 3 lost");
+            preview.object3D.visible = true;
+          });
+        }
+      });
+
+      AFRAME.registerComponent('oect4', {
+        init: function () {
+          const preview = document.getElementById('preview-model');
+
+          this.el.addEventListener('targetFound', event => {
+            console.log("target 4 found");
+            preview.object3D.visible = false;
+          });
+          this.el.addEventListener('targetLost', event => {
+            console.log("target 4 lost");
             preview.object3D.visible = true;
           });
         }
